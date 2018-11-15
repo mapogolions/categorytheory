@@ -12,7 +12,7 @@ trait Functor[F[_]] { self =>
   def compose[G[_]: Functor]: Functor[[X] => F[G[X]]] =
     new Functor[[X] => F[G[X]]] {
       override def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] =
-        self.map(fga)(fa => Functor[G].map(fa)(f))      
+        self.map(fga)(fa => Functor[G].map(fa)(f))
     }
 }
 

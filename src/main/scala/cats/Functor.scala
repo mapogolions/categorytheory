@@ -24,12 +24,12 @@ object Functor {
 }
 
 object FunctorSyntax {
-  implicit class FunctorOps[F[_], A](F: F[A])(implicit functorInstance: Functor[F]) {
-    def map[B](f: A => B): F[B] = functorInstance.map(F)(f)
-    def lift[B](f: A => B): () => F[B] = () => functorInstance.lift(f)(F)
-    def as[B](b: B): F[B] = functorInstance.as(F, b)
-    def void[B]: F[Unit] = functorInstance.void(F)
-    def fproduct[B](f: A => B): F[(A, B)] = functorInstance.fproduct(F)(f)
+  implicit class FunctorOps[F[_]: Functor, A](F: F[A]) {
+    def map[B](f: A => B): F[B] = implicitly.map(F)(f)
+    def lift[B](f: A => B): () => F[B] = () => implicitly.lift(f)(F)
+    def as[B](b: B): F[B] = implicitly.as(F, b)
+    def void[B]: F[Unit] = implicitly.void(F)
+    def fproduct[B](f: A => B): F[(A, B)] = implicitly.fproduct(F)(f)
   }
 }
 

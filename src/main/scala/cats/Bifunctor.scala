@@ -18,7 +18,6 @@ trait Bifunctor[G[_, _]] { self =>
   def lift[A, C, B, D](f: A => C, g: B => D): G[A, B] => G[C, D]
   def first[A, C, B](f: A => C): G[A, B] => G[C, B] = lift(f, identity)
   def second[A, B, D](g: B => D): G[A, B] => G[A, D] = lift(identity, g)
-
   /* How to use: val FR = Bifunctor[Pair].rightFunctor[Char]
                  FR.map(Pair('a', 10))(_ > 0)
   */
@@ -39,15 +38,15 @@ object Bifunctor {
 }
 
 object BifunctorSyntax {
-  implicit class BifunctorOps[G[_, _], A, B](G: G[A, B])(implicit bifunctorInstance: Bifunctor[G]) {
-    def umap[C](f: A | B => C): G[C, C] = bifunctorInstance.umap(G)(f)
-    def leftMap[C](f: A => C): G[C, B] = bifunctorInstance.leftMap(G)(f)
-    def rightMap[D](g: B => D): G[A, D] = bifunctorInstance.rightMap(G)(g)
-    def bimap[C, D](f: A => C, g: B => D): G[C, D] = bifunctorInstance.bimap(G)(f, g)
+  implicit class BifunctorOps[G[_, _]: Bifunctor, A, B](G: G[A, B]) {
+    def umap[C](f: A | B => C): G[C, C] = implicitly.umap(G)(f)
+    def leftMap[C](f: A => C): G[C, B] = implicitly.leftMap(G)(f)
+    def rightMap[D](g: B => D): G[A, D] = implicitly.rightMap(G)(g)
+    def bimap[C, D](f: A => C, g: B => D): G[C, D] = implicitly.bimap(G)(f, g)
 
-    def lift[C, D](f: A => C, g: B => D): () => G[C, D] = () => bifunctorInstance.lift(f, g)(G)
-    def first[C](f: A => C): () => G[C, B] = () => bifunctorInstance.first(f)(G)
-    def second[D](g: B => D): () => G[A, D] = () => bifunctorInstance.second(g)(G)
+    def lift[C, D](f: A => C, g: B => D): () => G[C, D] = () => implicitly.lift(f, g)(G)
+    def first[C](f: A => C): () => G[C, B] = () => implicitly.first(f)(G)
+    def second[D](g: B => D): () => G[A, D] = () => implicitly.second(g)(G)
   }
 }
 

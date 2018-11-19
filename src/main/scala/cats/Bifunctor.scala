@@ -34,7 +34,8 @@ trait Bifunctor[G[_, _]] { self =>
 }
 // Bifunctor[List] map
 object Bifunctor {
-  def apply[G[_, _]](implicit bifunctorInstance: Bifunctor[G]) = bifunctorInstance
+  def apply[G[_, _]: Bifunctor] = implicitly
+  // def apply[G[_, _]](implicit bifunctorInstance: Bifunctor[G]) = bifunctorInstance
 }
 
 object BifunctorSyntax {

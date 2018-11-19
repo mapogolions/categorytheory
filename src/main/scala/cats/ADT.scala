@@ -1,5 +1,8 @@
 package io.github.mapogolions.cats.adt
 
+
+trait Reader[R, A] extends Function[R, A]
+
 /* data (, ) */
 case class Pair[A, B](val first: A, val second: B)
 

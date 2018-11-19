@@ -18,7 +18,6 @@ trait Bifunctor[G[_, _]] {
   def lift[A, C, B, D](f: A => C, g: B => D): G[A, B] => G[C, D]
   def first[A, C, B](f: A => C): G[A, B] => G[C, B] = lift(f, identity)
   def second[A, B, D](g: B => D): G[A, B] => G[A, D] = lift(identity, g)
-
   /* extract functors */
   // Pair(10, 'a') leftFunctor  -> Pair[Int, ?](10)
   // fab = Pair(10, false)  f

@@ -9,15 +9,22 @@ trait Functor[F[_]] { self =>
   def as[A, B](fa: F[A], b: B): F[B] = map(fa)(_ => b)
   def void[A](fa: F[A]): F[Unit] = as(fa, ())
   def fproduct[A, B](fa: F[A])(f: A => B): F[(A, B)] = map(fa)(a => a -> f(a))
+  // Functor[Just] compose Functor[List] -> [X] -> 
   def compose[G[_]: Functor]: Functor[[X] => F[G[X]]] =
     new Functor[[X] => F[G[X]]] {
       override def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] =
-        self.map(fga)(fa => Functor[G].map(fa)(f))
+        self.map(fga)(fa => implicitly.map(fa)(f))
     }
+/*  def compose[G[_]: Functor]: Functor[[X] => F[G[X]]] =
+    new Functor[[X] => F[G[X]]] {
+      override def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] =
+        self.map(fga)(fa => Functor[G].map(fa)(f))
+    } */
 }
 
 object Functor {
-  def apply[F[_]: Functor](implicit functorInstance: Functor[F]): Functor[F] = functorInstance
+  def apply[F[_]: Functor]: Functor[F] = implicitly
+  // def apply[F[_]](implicit functorInstance: Functor[F]): Functor[F] = functorInstance
 }
 
 object FunctorSyntax {

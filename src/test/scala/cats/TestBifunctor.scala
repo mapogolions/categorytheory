@@ -17,6 +17,21 @@ class TestBifunctor {
   import io.github.mapogolions.cats.bifunctor.BifunctorSyntax._
 
   @Test
+  def leftBifunctorTest: Unit = {
+    val FL = Bifunctor[Pair].leftFunctor[Boolean]
+    assertEquals(FL.map(Pair("hello", false))(_.length), Pair(5, false))
+
+    val FL2 = Bifunctor[Either].leftFunctor[Int]
+    assertEquals(FL2.map(Left(10))(_ > 0), Left(true))
+  }
+
+  @Test
+  def rightFunctorTest: Unit = {
+    val FR = Bifunctor[Pair].rightFunctor[Char]
+    assertEquals(FR.map(Pair('a', 10))(_ > 0), Pair('a', true))
+  }
+
+  @Test
   def firstTest(): Unit = {
     assertThat(
       Pair(0, false),

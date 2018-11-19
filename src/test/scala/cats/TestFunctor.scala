@@ -13,7 +13,7 @@ import io.github.mapogolions.cats.adt.{
 
 
 class TestFunctor {
-  import io.github.mapogolions.cats.functor.FunctorIntances._
+  import io.github.mapogolions.cats.functor.FunctorInstances._
   import io.github.mapogolions.cats.functor.FunctorSyntax._
 
   @Test

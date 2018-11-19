@@ -7,7 +7,7 @@ fmap :: (a -> b) -> (fa -> fb)
 
 bimap :: (a -> c) -> (b -> d) -> (fab -> fcd)
  */
-trait Bifunctor[G[_, _]] {
+trait Bifunctor[G[_, _]] { self =>
   /* maps */
   def bimap[A, C, B, D](fab: G[A, B])(f: A => C, g: B => D): G[C, D]
   def leftMap[A, C, B](fab: G[A, B])(f: A => C): G[C, B] = bimap(fab)(f, identity)
@@ -18,9 +18,19 @@ trait Bifunctor[G[_, _]] {
   def lift[A, C, B, D](f: A => C, g: B => D): G[A, B] => G[C, D]
   def first[A, C, B](f: A => C): G[A, B] => G[C, B] = lift(f, identity)
   def second[A, B, D](g: B => D): G[A, B] => G[A, D] = lift(identity, g)
-  /* extract functors */
-  // Pair(10, 'a') leftFunctor  -> Pair[Int, ?](10)
-  // fab = Pair(10, false)  f
+
+  /* How to use: val FR = Bifunctor[Pair].rightFunctor[Char]
+                 FR.map(Pair('a', 10))(_ > 0)
+  */
+  def rightFunctor[A]: Functor[[X] => G[A, X]] = new Functor[[X] => G[A, X]] {
+    override def map[B, D](fab: G[A, B])(f: B => D): G[A, D] =
+      self.bimap(fab)(identity, f)
+  }
+
+  def leftFunctor[B]: Functor[[X] => G[X, B]] = new Functor[[X] => G[X, B]] {
+    override def map[A, C](fab: G[A, B])(f: A => C): G[C, B] =
+      self.bimap(fab)(f, identity)
+  }
 }
 // Bifunctor[List] map
 object Bifunctor {
@@ -41,6 +51,19 @@ object BifunctorSyntax {
 }
 
 object BifunctorInstances {
+  implicit val eitherBifunctor: Bifunctor[Either] = new Bifunctor[Either] {
+    def bimap[A, C, B, D](fab: Either[A, B])(f: A => C, g: B => D): Either[C, D] =
+      fab match {
+        case Left(a) => Left(f(a))
+        case Right(b) => Right(g(b))
+      }
+
+    def lift[A, C, B, D](f: A => C, g: B => D): Either[A, B] => Either[C, D] = {
+      val h: Either[A, B] => Either[C, D] = bimap(_)(f, g)
+      h
+    }
+  }
+
   implicit val rightBifunctor: Bifunctor[Right] = new Bifunctor[Right] {
     def bimap[A, C, B, D](fab: Right[A, B])(f: A => C, g: B => D): Right[C, D] =
       fab match {

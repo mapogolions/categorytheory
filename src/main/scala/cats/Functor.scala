@@ -14,12 +14,8 @@ trait Functor[F[_]] { self =>
     new Functor[[X] => F[G[X]]] {
       override def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] =
         self.map(fga)(fa => implicitly.map(fa)(f))
+        // self.map(fga)(fa => Functor[G].map(fa)(f))
     }
-/*  def compose[G[_]: Functor]: Functor[[X] => F[G[X]]] =
-    new Functor[[X] => F[G[X]]] {
-      override def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] =
-        self.map(fga)(fa => Functor[G].map(fa)(f))
-    } */
 }
 
 object Functor {
@@ -37,7 +33,7 @@ object FunctorSyntax {
   }
 }
 
-object FunctorIntances {
+object FunctorInstances {
   implicit val consFunctor: Functor[Cons] = new Functor[Cons] {
     def map[A, B](fa: Cons[A])(f: A => B): Cons[B] =
       fa match {

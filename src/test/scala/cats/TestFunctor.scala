@@ -17,6 +17,36 @@ class TestFunctor {
   import io.github.mapogolions.cats.functor.FunctorSyntax._
 
   @Test
+  def functorTupleLeft: Unit = {
+    assertEquals(
+      Just(10).tupleRight(-2),
+      Just(10, -2)
+    )
+    assertEquals(
+      Just(10).tupleLeft("txt"),
+      Just("txt", 10)
+    )
+
+    assertEquals(
+      Cons(2, Nil).tupleRight('a'),
+      Cons((2, 'a'), Nil)
+    )
+    assertEquals(
+      List(1, 2, 3).tupleLeft('a'),
+      List(('a', 1), ('a', 2), ('a', 3))
+    )
+
+    assertEquals(
+      Functor[Maybe].tupleLeft(Just(false), 10),
+      Just((10, false))
+    )
+    assertEquals(
+      Functor[List].tupleRigth(List(1, 2, 3), 10),
+      List((1, 10), (2, 10), (3, 10))
+    )
+  }
+
+  @Test
   def functorComposition(): Unit = {
     val listWithMaybe = Functor[List] compose Functor[Maybe]
     assertEquals(

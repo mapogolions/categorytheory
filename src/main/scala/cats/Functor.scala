@@ -9,6 +9,10 @@ trait Functor[F[_]] { self =>
   def as[A, B](fa: F[A], b: B): F[B] = map(fa)(_ => b)
   def void[A](fa: F[A]): F[Unit] = as(fa, ())
   def fproduct[A, B](fa: F[A])(f: A => B): F[(A, B)] = map(fa)(a => a -> f(a))
+  
+  def tupleLeft[A, B](fa: F[A], b: B): F[(B, A)] = map(fa)((b, _))
+  def tupleRigth[A, B](fa: F[A], b: B): F[(A, B)] = map(fa)((_, b))
+
   // Functor[Just] compose Functor[List] -> [X] -> 
   def compose[G[_]: Functor]: Functor[[X] => F[G[X]]] =
     new Functor[[X] => F[G[X]]] {
@@ -30,6 +34,8 @@ object FunctorSyntax {
     def as[B](b: B): F[B] = implicitly.as(F, b)
     def void[B]: F[Unit] = implicitly.void(F)
     def fproduct[B](f: A => B): F[(A, B)] = implicitly.fproduct(F)(f)
+    def tupleLeft[B](b: B): F[(B, A)] = implicitly.tupleLeft(F, b)
+    def tupleRight[B](b: B): F[(A, B)] = implicitly.tupleRigth(F, b)
   }
 }
 

@@ -2,14 +2,6 @@ package io.github.mapogolions.cats.monad
 
 import io.github.mapogolions.cats.adt._
 
-/* 
->=> :: (a -> mb) -> (b -> mc) -> (a -> mc)
->=> f g = \a -> let mb = (f a)
-                     in (mb =>> g)
-
-=>> :: mb -> (b -> mc) -> mc
-
- */
 
 trait Monad[M[_]] {
   def >=>[A, B, C](f: A => M[B], g: B => M[C]): A => M[C] = a: A => ->>(f(a))(g)
@@ -17,7 +9,7 @@ trait Monad[M[_]] {
 }
 
 object MonadSyntax {
-  implicit class MonadOps[M[_], A](M: M[A])(implicit monadInstance: Monad[M]) {
+  implicit class BindOperatorOps[M[_], A](M: M[A])(implicit monadInstance: Monad[M]) {
     def ->>[B](f: A => M[B]): M[B] = monadInstance.->>(M)(f)
   }
 

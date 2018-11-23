@@ -1,4 +1,37 @@
 package io.github.mapogolions.cats.adt
+import io.github.mapogolions.cats.functor.Functor
+import io.github.mapogolions.cats.functor.FunctorInstances._
+import io.github.mapogolions.cats.functor.FunctorSyntax._
+// Types for json parsing lib
+trait Result[+A]
+case class Success[A](val elem: Cons[A], msg: String) extends Result[A]
+case class Failure(val err: String) extends Result[Nothing] 
+
+trait Parser[A] { self => 
+  def apply(token: String): Result[A]
+ def |>[B](f: A => B): Parser[B] = new Parser {
+    def apply(token: String): Result[B] = (self apply token) match {
+      case Success(h, t) => Success(h.map(f), t)
+      case Failure(err) => Failure(err)
+    }
+  }
+  def >>(pb: Parser[A]): Parser[A] = new Parser[A] {
+    def apply(token: String): Result[A] = (self apply token) match {
+      case Failure(e)      => Failure(e)
+      case Success(h1: A, t1) => (pb apply t1) match {
+        case Failure(e)      => Failure(e)
+        case Success(h2: A, t2) => Success(Cons(h1, Cons(h2, Nil)), t2)
+      }
+    }
+  }
+  def <|>(pb: Parser[A]): Parser[A] = new Parser[A] {
+    def apply(token: String): Result[A] = (self apply token) match {
+      case Success(h: A, t) => Success(Cons(h, Nil), t)
+      case Failure(e)    => pb.apply(token)
+    }
+  }
+}
+// case class Parser[A](val f: String => Result[A])
 
 
 trait Reader[R, A] extends Function[R, A]

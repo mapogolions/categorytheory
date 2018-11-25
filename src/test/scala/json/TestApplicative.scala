@@ -19,19 +19,19 @@ class TestApplicative {
 
 
   @Test
-  def TestAp: Unit = {
-    val f: Int => Boolean = _ > 0
-    val g: Char => Int => Boolean = x: Char => f
-    val ff0 = Applicative[Parser].pure(g)
-    val ff1 = Applicative[Parser].ap(ff0)
-    val ff2 = ff1('a' parse)
-    val next = Applicative[Parser].ap(ff2)
-    next('a'.parse.map(_.toInt))
-    // (Applicative[Parser] ap Applicative[Parser].pure(g))('a' parse)
+  def TestApMultyArity: Unit = {
+    val sum: Char => Int => Int = a: Char => b: Int => a.toInt + b
+    assertEquals(
+      Applicative[Parser].pure(sum) ap ('a' parse) ap ('b'.parse.map(_ toInt)) apply "abba",
+      Success(97 + 98, "ba")
+    )
+  }
 
+  @Test
+  def TestApOnceArity: Unit = {
     val ff = Applicative[Parser] pure { x: Char => x toString }
     assertEquals(
-      Applicative[Parser].ap(ff)('a' parse) apply "allo",
+      ff ap ('a' parse) apply "allo",
       Success("a", "llo")
     )
   }

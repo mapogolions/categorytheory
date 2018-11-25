@@ -16,9 +16,11 @@ object Applicative {
 
 object ApplicativeSyntax {
   implicit class ApplicativeOps[F[_]: Applicative, A](F: F[A]) {
-    def pure(x: A): F[A] = implicitly.pure(x)
     def unit: F[Unit] = implicitly.unit
-    def ap[B](ff: F[A => B]): F[B] = implicitly.ap(ff)(F)
+  }
+
+  implicit class ApplicativeArrowOps[F[_]: Applicative, A, B](F: F[A => B]) {
+    def ap(fa: F[A]): F[B] = implicitly.ap(F)(fa)
   }
 }
 

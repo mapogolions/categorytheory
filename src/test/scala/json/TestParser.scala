@@ -12,8 +12,23 @@ import io.github.mapogolions.json.adt._
 import io.github.mapogolions.json.functor.Functor
 import io.github.mapogolions.json.functor.FunctorInstances._
 import io.github.mapogolions.json.functor.FunctorSyntax._
+import io.github.mapogolions.json.applicative.Applicative
+import io.github.mapogolions.json.applicative.ApplicativeInstances._
+import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
+  @Test
+  def TestParseLift: Unit = {
+    val pa = Applicative[Parser] pure 10
+    val pb = Applicative[Parser] pure 'a'
+    val f: Int => Char => String = a: Int => b: Char => a.toString + b + ""
+    val fake = ""
+    assertEquals(
+      lift(f, pa, pb) apply fake,
+      Success("10a", "")
+    )
+  }
+
   @Test
   def TestParseThreeDigitsAsInt: Unit = {
     assertEquals(

@@ -9,9 +9,9 @@ import io.github.mapogolions.json.applicative.ApplicativeInstances._
 import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 object ParserOps {
-  /* def lift[A, B, C](f: A => B => C) = {
-    val ff = Applicative[Parser] pure f
-  } */
+  def lift[A, B, C](f: A => B => C, pa: Parser[A], pb: Parser[B]) =
+    Applicative[Parser].pure(f).ap(pa).ap(pb)
+
   def parserThreeDigitsAsInt = parseThreeDigitsAsStr map { _.toInt }
   def parseThreeDigitsAsStr = {
     def transform(xs: ((Char, Char), Char)): String = 

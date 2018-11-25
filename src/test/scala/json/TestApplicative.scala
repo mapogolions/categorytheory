@@ -15,6 +15,17 @@ class TestApplicative {
   import io.github.mapogolions.json.applicative.ApplicativeInstances._
   import io.github.mapogolions.json.functor.FunctorSyntax._
   import io.github.mapogolions.json.functor.FunctorInstances._
+  import io.github.mapogolions.json.ops.ParserOps._
+
+  @Test
+  def TestApOneArityLifting: Unit = {
+    val str: Char => String = _ toString
+    val ff = Applicative[Parser] pure str
+    assertEquals(
+      Applicative[Parser].ap(ff)('a' parse) apply "allo",
+      Success("a", "llo")
+    )
+  }
 
   @Test
   def TestPure: Unit = {

@@ -3,6 +3,9 @@ package io.github.mapogolions.cats
 import scala.language.implicitConversions
 import io.github.mapogolions.json.ops.ParserOps
 import io.github.mapogolions.json.adt._
+import io.github.mapogolions.json.functor.Functor
+import io.github.mapogolions.json.functor.FunctorInstances._
+import io.github.mapogolions.json.functor.FunctorSyntax._
 
 
 object Main {
@@ -10,22 +13,13 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     println("category theory")
-    val chain = (('a' parse )
-      |> { _ toInt }
-      |> { _ toDouble }
-      |> { _ toString}
-      apply "another"
-    )
-    // println(chain)
-    val memo = (('a' parse) 
-      >> ('b' parse) 
-      >> ('c' parse) 
-      >> ('d' parse)
-      >> ('e' parse)
-      |> { _ toInt }
-      |> { _ + 1 }
-      |> { _ toChar })      
-    println(memo apply "abcdeoogle")
+    println(parseDigit apply "0hello")
+    println(parseLowerCase apply "stopper")
+    println(parseUpperCase apply "stopper")
+    println(parseThreeDigits apply "129stopper")
+    println(parseThreeDigitsAsStr apply "129stoper")
+    println(parseThreeDigitsAsStr apply "129stoper")
+    println(parserThreeDigitsAsInt apply "129stoper")
   }
   def msg = "I was compiled by dotty :)"
 }

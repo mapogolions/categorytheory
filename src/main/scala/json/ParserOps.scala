@@ -6,7 +6,7 @@ import io.github.mapogolions.json.functor.FunctorInstances._
 import io.github.mapogolions.json.functor.FunctorSyntax._
 
 object ParserOps {
-  def parserThreeDigitsAsInt = parseThreeDigitsAsStr map { _.toInt + 1 }
+  def parserThreeDigitsAsInt = parseThreeDigitsAsStr map { _.toInt }
   def parseThreeDigitsAsStr = {
     val combinator = parseThreeDigits
     def transform(xs: ((Char, Char), Char)): String = xs match {

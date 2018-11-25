@@ -13,7 +13,6 @@ case class Cons[A](
 
 
 trait Result[+A]
-//case class Success[A](val elem: Cons[A], msg: String) extends Result[A]
 case class Success[A](val elem: A, msg: String) extends Result[A]
 case class Failure(val err: String) extends Result[Nothing]
 
@@ -34,6 +33,7 @@ trait Parser[A] { self =>
       case Failure(e) => (pb apply token)
     }
   }
+
   def apply(token: String): Result[A]
 }
 

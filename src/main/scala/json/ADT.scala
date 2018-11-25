@@ -1,8 +1,7 @@
 package io.github.mapogolions.json.adt
 
-import io.github.mapogolions.json.functor.Functor
-import io.github.mapogolions.json.functor.FunctorInstances._
-import io.github.mapogolions.json.functor.FunctorSyntax._
+import io.github.mapogolions.json.functor._
+
 
 trait LinkedList[+A]
 case object Nil extends LinkedList[Nothing]

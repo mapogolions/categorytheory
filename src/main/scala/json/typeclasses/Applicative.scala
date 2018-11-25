@@ -1,8 +1,10 @@
 package io.github.mapogolions.json.applicative
 
 import io.github.mapogolions.json.adt._
+import io.github.mapogolions.json.functor.Functor
 import io.github.mapogolions.json.functor.FunctorInstances._
 import io.github.mapogolions.json.functor.FunctorSyntax._
+
 
 trait Applicative[F[_]] {
   def pure[A](x: A): F[A]
@@ -11,6 +13,9 @@ trait Applicative[F[_]] {
 }
 
 object Applicative {
+  import ApplicativeInstances._
+  import ApplicativeSyntax._
+
   def apply[F[_]: Applicative] = implicitly
 }
 

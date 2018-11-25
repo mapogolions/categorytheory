@@ -2,6 +2,7 @@ package io.github.mapogolions.json.functor
 
 import io.github.mapogolions.json.adt._
 
+
 trait Functor[F[_]] { self =>
   def map[A, B](fa: F[A])(f: A => B): F[B]
   def lift[A, B](f: A => B): F[A] => F[B] = fa => map(fa)(f)
@@ -48,21 +49,4 @@ object FunctorInstances {
         }
       }
   }
-
-  implicit val consFunctor: Functor[Cons] = new Functor[Cons] {
-    def map[A, B](fa: Cons[A])(f: A => B): Cons[B] =
-      fa match {
-        case Cons(h, Nil) => Cons(f(h), Nil)
-        case Cons(h, t: Cons[A]) => Cons(f(h), map(t)(f))
-      }
-  }
-  
-  implicit val listFunctor: Functor[LinkedList] = 
-    new Functor[LinkedList] {
-      def map[A, B](fa: LinkedList[A])(f: A => B): LinkedList[B] =
-        fa match {
-          case Nil => Nil
-          case Cons(h, t) => Cons(f(h), map(t)(f))
-        }
-    }
 }

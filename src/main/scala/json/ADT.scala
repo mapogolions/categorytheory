@@ -36,24 +36,3 @@ trait Parser[A] { self =>
 
   def apply(token: String): Result[A]
 }
-
-object LinkedList {
-  def apply[A](items: A*): LinkedList[A] = {
-    if (items.length == 0) Nil
-    else Cons(items.head, apply(items.tail: _*))
-  }
-
-  def append[A](as: LinkedList[A], bs: LinkedList[A]): LinkedList[A] = {
-    (as, bs) match {
-      case (Nil, _) => bs
-      case (_, Nil) => as
-      case (Cons(h, t), Cons(_, _)) => Cons(h, append(t, bs))
-    }
-  }
-  def appendCons[A](as: Cons[A], bs: Cons[A]): Cons[A] = {
-    (as, bs) match {
-      case (Nil, _) => bs
-      case (Cons(h, t), Cons(_, _)) => Cons(h, append(t, bs))
-    }
-  }
-}

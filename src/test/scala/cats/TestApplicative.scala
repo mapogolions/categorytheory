@@ -13,6 +13,7 @@ class TestApplicative {
   import io.github.mapogolions.cats.applicative.ApplicativeInstances._
   import io.github.mapogolions.cats.applicative.ApplicativeSyntax._
 
+
   @Test
   def mapTest: Unit = {
     assertEquals(

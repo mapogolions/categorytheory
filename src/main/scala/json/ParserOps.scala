@@ -8,11 +8,9 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 object ParserOps {
   def parserThreeDigitsAsInt = parseThreeDigitsAsStr map { _.toInt }
   def parseThreeDigitsAsStr = {
-    val combinator = parseThreeDigits
-    def transform(xs: ((Char, Char), Char)): String = xs match {
-      case ((a, b), c) => s"${a}${b}${c}"
-    }
-    combinator.map(transform)
+    def transform(xs: ((Char, Char), Char)): String = 
+      xs match { case ((a, b), c) => s"${a}${b}${c}" }
+    parseThreeDigits.map(transform)
   }
   def parseThreeDigits = parseDigit >> parseDigit >> parseDigit
   def parseLowerCase = Range('a', 'z').toList.map(_ toChar) anyOf

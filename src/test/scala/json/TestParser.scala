@@ -24,7 +24,7 @@ class TestParser {
     val f: Int => Char => String = a: Int => b: Char => a.toString + b + ""
     val fake = ""
     assertEquals(
-      lift(f, pa, pb) apply fake,
+      lift(f)(pa)(pb) apply fake,
       Success("10a", "")
     )
   }

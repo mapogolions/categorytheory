@@ -10,7 +10,8 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 
 
 object ParserOps {
-  def lift[A, B, C](f: A => B => C, pa: Parser[A], pb: Parser[B]) =
+  // def add = lift(+)
+  def lift[A, B, C](f: A => B => C)(pa: Parser[A])(pb: Parser[B]) =
     Applicative[Parser].pure(f).ap(pa).ap(pb)
 
   def parserThreeDigitsAsInt = parseThreeDigitsAsStr map { _.toInt }

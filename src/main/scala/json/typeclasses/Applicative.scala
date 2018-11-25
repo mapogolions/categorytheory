@@ -13,9 +13,6 @@ trait Applicative[F[_]] {
 }
 
 object Applicative {
-  import ApplicativeInstances._
-  import ApplicativeSyntax._
-
   def apply[F[_]: Applicative] = implicitly
 }
 

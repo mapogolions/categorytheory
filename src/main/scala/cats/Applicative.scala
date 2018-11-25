@@ -15,7 +15,7 @@ object Applicative {
 }
 
 object ApplicativeSyntax {
-  implicit class FunctorOps[F[_]: Applicative, A](F: F[A]) {
+  implicit class ApplicativeOps[F[_]: Applicative, A](F: F[A]) {
     // def pure(x: A): F[A] = implicitly.pure(x)
     def map[B](f: A => B): F[B] = implicitly.map(F)(f)
     def unit: F[Unit] = implicitly.unit

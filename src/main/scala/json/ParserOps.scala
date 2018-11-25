@@ -4,6 +4,9 @@ import io.github.mapogolions.json.adt._
 import io.github.mapogolions.json.functor.Functor
 import io.github.mapogolions.json.functor.FunctorInstances._
 import io.github.mapogolions.json.functor.FunctorSyntax._
+import io.github.mapogolions.json.applicative.Applicative
+import io.github.mapogolions.json.applicative.ApplicativeInstances._
+import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 object ParserOps {
   def parserThreeDigitsAsInt = parseThreeDigitsAsStr map { _.toInt }

@@ -11,7 +11,7 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 
 object ParserOps {
   def sequence[A](ls: List[Parser[A]]): Parser[List[A]] = {
-    def cons[A] =  lift((x: A) => (xs: List[A]) => x :: xs)
+    def cons[A] =  lift({ x: A => xs: List[A] => x :: xs })
     ls match {
       case Nil => Applicative[Parser].pure(Nil)
       case (x::xs) => cons(x)(sequence(xs))

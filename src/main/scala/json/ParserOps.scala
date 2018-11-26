@@ -10,7 +10,21 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 
 
 object ParserOps {
-  // def add = lift(+)
+  def combined = sequence(
+    'a'.parse :: 
+    'b'.parse :: 
+    'c'.parse :: 
+    Nil)
+  // List( 'a' parse, 'b' parse) -> Parser(List('a', 'b', 'c'))
+  def sequence[A](ls: List[Parser[A]]): Parser[List[A]] = {
+    def cons[A] =  lift((x: A) => (xs: List[A]) => x :: xs)
+    ls match {
+      case Nil => Applicative[Parser].pure(Nil)
+      case (x::xs) => cons(x)(sequence(xs))
+    }
+  }
+  def startWith = lift({ token: String => token.startsWith })
+  def add = lift({ a: Int => b: Int => a + b })
   def lift[A, B, C](f: A => B => C)(pa: Parser[A])(pb: Parser[B]) =
     Applicative[Parser].pure(f).ap(pa).ap(pb)
 

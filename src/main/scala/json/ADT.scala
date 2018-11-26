@@ -3,14 +3,6 @@ package io.github.mapogolions.json.adt
 import io.github.mapogolions.json.functor._
 
 
-trait LinkedList[+A]
-case object Nil extends LinkedList[Nothing]
-case class Cons[A](
-  val head: A, 
-  val tail: LinkedList[A]
-) extends LinkedList[A]
-
-
 trait Result[+A]
 case class Success[A](val elem: A, msg: String) extends Result[A]
 case class Failure(val err: String) extends Result[Nothing]

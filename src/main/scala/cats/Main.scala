@@ -13,6 +13,7 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     println("category theory")
+    println(combined apply "abcd")
   }
   def msg = "I was compiled by dotty :)"
 }

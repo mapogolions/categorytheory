@@ -10,12 +10,6 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 
 
 object ParserOps {
-  def combined = sequence(
-    'a'.parse :: 
-    'b'.parse :: 
-    'c'.parse :: 
-    Nil)
-  // List( 'a' parse, 'b' parse) -> Parser(List('a', 'b', 'c'))
   def sequence[A](ls: List[Parser[A]]): Parser[List[A]] = {
     def cons[A] =  lift((x: A) => (xs: List[A]) => x :: xs)
     ls match {
@@ -38,6 +32,11 @@ object ParserOps {
   def parseLowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
   def parseUpperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
   def parseDigit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') anyOf
+  
+  implicit class StringOps(str: String) {
+    def parse: Parser[String] = 
+      sequence(str.toList.map(_ parse)) map { _ mkString("") }
+  }
 
   implicit class ListOfCharsOpts(ls: List[Char]) {
     def anyOf = ls.map(_ parse).choice

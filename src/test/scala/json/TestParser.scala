@@ -18,6 +18,15 @@ import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
   @Test
+  def TestParseString: Unit = {
+    val parseABC = "ABC".parse
+    assertEquals(
+      parseABC apply "ABCDE",
+      Success("ABC", "DE")
+    )
+  }
+
+  @Test
   def TestParseLift: Unit = {
     val pa = Applicative[Parser] pure 10
     val pb = Applicative[Parser] pure 'a'

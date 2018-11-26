@@ -10,6 +10,15 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 
 
 object ParserOps {
+  def anytimes[A](pa: Parser[A], token: String): (List[A], String) = {
+    (pa apply token) match {
+      case Failure(e) => (Nil, token)
+      case Success(h, t) => {
+        val res = anytimes(pa, t)
+        (h :: res._1, res._2)
+      }
+    }
+  }
   def sequence[A](ls: List[Parser[A]]): Parser[List[A]] = {
     def cons[A] =  lift({ x: A => xs: List[A] => x :: xs })
     ls match {

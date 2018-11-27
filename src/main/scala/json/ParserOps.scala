@@ -37,9 +37,11 @@ object ParserOps {
 
   def upperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
   def lowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
-  
+  def whitespace = List(' ', '\t', '\n') anyOf
+  def whitespaces = whitespace atLeastOne
 
   implicit class StringOps(str: String) {
+    def between[B, C] = parse.between[B, C]
     def opt = parse opt
     def atLeastOne: Parser[List[String]] = parse atLeastOne
     def many: Parser[List[String]] = parse many
@@ -64,6 +66,7 @@ object ParserOps {
   }
 
   implicit class CharOps(ch: Char) {
+    def between[B, C] = parse.between[B, C]
     def opt = parse opt
     def atLeastOne: Parser[List[Char]] = parse atLeastOne
     def many: Parser[List[Char]] = parse many

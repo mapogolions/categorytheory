@@ -18,6 +18,33 @@ import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
   @Test
+  def TestWhitespaces: Unit = {
+    assertEquals(
+      whitespaces | "\t text",
+      Success(List('\t', ' '), "text")
+    )
+    assertEquals(
+      whitespaces | "\n\t text", 
+      Success(List('\n', '\t', ' '), "text")
+    )
+  }
+
+  @Test
+  def TestWhitespace: Unit = {
+    assertEquals(whitespace | " text",Success(' ', "text"))
+    assertEquals(whitespace | "\t text",Success('\t', " text"))
+    assertEquals(whitespace | "\n\t text", Success('\n', "\t text"))
+  }
+
+  @Test
+  def TestBetween: Unit = {
+    assertEquals(
+      'a'.between('b'.once)('c'.once) | "bac-...",
+      Success('a', "-...")
+    )
+  }
+
+  @Test
   def TestKeepRight: Unit = {
     assertEquals(
       digit  <| digit | "123",

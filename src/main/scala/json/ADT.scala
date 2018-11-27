@@ -13,6 +13,9 @@ case class Success[A](val elem: A, msg: String) extends Result[A]
 case class Failure(val err: String) extends Result[Nothing]
 
 trait Parser[A] { self =>
+  // Keep only result of the middle parser - between
+  def between[B, C](pb: Parser[B])(pc: Parser[C]) = pb |> self <| pc
+
   // throwing results away
   def <|[B](pb: Parser[B]) = self >> pb map { (a, b) => a }
   def |>[B](pb: Parser[B]) = self >> pb map { (a, b) => b }

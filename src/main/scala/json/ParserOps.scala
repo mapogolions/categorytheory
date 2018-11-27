@@ -10,24 +10,6 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 
 
 object ParserOps {
-  private def oneOrMore[A](pa: Parser[A], token: String): Result[List[A]] = {
-    (pa apply token) match {
-      case Failure(e) => Failure(e)
-      case Success(h, t) => {
-        val (xs, rest) = anytimes(pa, t)
-        Success(h :: xs,  rest)
-      }
-    }
-  }
-  private def anytimes[A](pa: Parser[A], token: String): (List[A], String) = {
-    (pa apply token) match {
-      case Failure(e) => (Nil, token)
-      case Success(h, t) => {
-        val res = anytimes(pa, t)
-        (h :: res._1, res._2)
-      }
-    }
-  }
   def startWith = lift({ token: String => token.startsWith })
   def add = lift({ a: Int => b: Int => a + b })
   def lift[A, B, C](f: A => B => C)(pa: Parser[A])(pb: Parser[B]) =
@@ -56,21 +38,6 @@ object ParserOps {
   def upperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
   def lowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
   
-  
-  implicit class ParserOps[A](pa: Parser[A]) {
-    def opt: Parser[Option[A]] = 
-      pa.map(Some(_)) <|> (Applicative[Parser] pure None)
-    def once = pa
-    def many: Parser[List[A]] = new Parser[List[A]] {
-      def apply(token: String) = {
-        val (ls, rest) = anytimes(pa, token)
-        Success(ls, rest)
-      }
-    }
-    def atLeastOne: Parser[List[A]] = new Parser[List[A]] {
-      def apply(token: String) = oneOrMore(pa, token)
-    }
-  }
 
   implicit class StringOps(str: String) {
     def opt = parse opt
@@ -81,7 +48,7 @@ object ParserOps {
       str.toList.map(_ parse).sequence map { _ mkString("") }
   }
 
-  implicit class ListOfCharsOpts(ls: List[Char]) {
+  implicit class ListOfCharsOps(ls: List[Char]) {
     def anyOf = ls.map(_ parse) choice
   }
  
@@ -91,7 +58,7 @@ object ParserOps {
       def cons[A] =  lift({ x: A => xs: List[A] => x :: xs })
       ls match {
         case Nil => Applicative[Parser] pure Nil
-        case (x::xs) => cons(x)(xs sequence)
+        case x::xs => cons(x)(xs sequence)
       }
     }
   }

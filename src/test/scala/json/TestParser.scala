@@ -18,6 +18,14 @@ import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
   @Test
+  def TestSep: Unit = {
+    assertEquals(
+      '?'.sep(whitespace) | "? ? ?...",
+      Success(List('?', '?', '?'), "...")
+    )
+  }
+
+  @Test
   def TestWhitespaces: Unit = {
     assertEquals(
       whitespaces | "\t text",
@@ -34,6 +42,18 @@ class TestParser {
     assertEquals(whitespace | " text",Success(' ', "text"))
     assertEquals(whitespace | "\t text",Success('\t', " text"))
     assertEquals(whitespace | "\n\t text", Success('\n', "\t text"))
+    assertEquals(
+      (whitespace >> digit).many | " 1 2 3 ",
+      Success(List((' ', '1'), (' ', '2'), (' ', '3')), " ")
+    )
+    assertEquals(
+      (whitespace |> digit).many | " 1 2 3 ",
+      Success(List('1', '2', '3'), " ")
+    )
+    assertEquals(
+      ('-'.once <| digit).many | "-1-2-3-",
+      Success(List('-', '-', '-'), "-")
+    )
   }
 
   @Test

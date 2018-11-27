@@ -41,6 +41,7 @@ object ParserOps {
   def whitespaces = whitespace atLeastOne
 
   implicit class StringOps(str: String) {
+    def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
     def atLeastOne: Parser[List[String]] = parse atLeastOne
@@ -66,6 +67,7 @@ object ParserOps {
   }
 
   implicit class CharOps(ch: Char) {
+    def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
     def atLeastOne: Parser[List[Char]] = parse atLeastOne

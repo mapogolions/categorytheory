@@ -28,7 +28,7 @@ class TestParser {
       Success(Nil, "lower")
     )
     assertEquals(
-      upperCase.atLeastOnce | "OOps",
+      upperCase.atLeastOne | "OOps",
       Success(List('O', 'O'), "ps")
     )
   }
@@ -36,7 +36,7 @@ class TestParser {
   @Test
   def TestDigit: Unit = {
     assertEquals(
-      digit.atLeastOnce | "134",
+      digit.atLeastOne | "134",
       Success(List('1', '3', '4'), "")
     )
     assertEquals(

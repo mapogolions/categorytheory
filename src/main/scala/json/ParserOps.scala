@@ -56,14 +56,14 @@ object ParserOps {
       }
     }
 
-    def atLeastOnce: Parser[List[A]] = new Parser[List[A]] {
+    def atLeastOne: Parser[List[A]] = new Parser[List[A]] {
       def apply(token: String) = oneOrMore(pa, token)
     }
   }
 
   implicit class StringOps(str: String) {
-    def atLeastOne: Parser[List[String]] = str.parse.atLeastOnce
-    def many: Parser[List[String]] = str.parse.many
+    def atLeastOne: Parser[List[String]] = parse atLeastOne
+    def many: Parser[List[String]] = parse many
     def once: Parser[String] = parse
     def parse: Parser[String] =
       str.toList.map(_ parse).sequence map { _ mkString("") }
@@ -85,8 +85,8 @@ object ParserOps {
   }
 
   implicit class CharOps(ch: Char) {
-    def atLeastOne: Parser[List[Char]] = ch.parse.atLeastOnce
-    def many: Parser[List[Char]] = ch.parse.many
+    def atLeastOne: Parser[List[Char]] = parse atLeastOne
+    def many: Parser[List[Char]] = parse many
     def once: Parser[Char] = parse
     def parse: Parser[Char] = new Parser[Char] {
       def apply(token: String): Result[Char] =

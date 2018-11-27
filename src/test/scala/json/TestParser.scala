@@ -18,17 +18,32 @@ import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
   @Test
+  def TestOpt: Unit = {
+    assertEquals(
+      'a'.parse.opt | "alloha", 
+      Success(Some('a'), "lloha")
+    )
+    assertEquals(
+      "ll".opt | "lloha",
+      Success(Some("ll"), "oha")
+    )
+    assertEquals(
+      pint.opt | "233h3",
+      Success(Some(233), "h3")
+    )
+  }
+  @Test
+  def TestPint: Unit = {
+    assertEquals(pint | "123hello", Success(123, "hello"))
+    assertEquals(pint | "1020", Success(1020, ""))
+  }
+
+  @Test
   def TestUppserCase: Unit = {
+    assertEquals(upperCase.once | "Albus", Success('A', "lbus"))
+    assertEquals(upperCase.many | "lower", Success(Nil, "lower"))
     assertEquals(
-      upperCase.once | "Albus",
-      Success('A', "lbus")
-    )
-    assertEquals(
-      upperCase.many | "lower",
-      Success(Nil, "lower")
-    )
-    assertEquals(
-      upperCase.atLeastOne | "OOps",
+      upperCase.atLeastOne | "OOps", 
       Success(List('O', 'O'), "ps")
     )
   }
@@ -52,7 +67,7 @@ class TestParser {
       Success(List("w", "w", "w"), ".google.com")
     )
     assertEquals(
-      'a'.atLeastOne apply "abus",
+      'a'.atLeastOne | "abus",
       Success(List('a'), "bus")
     )
   }
@@ -77,7 +92,7 @@ class TestParser {
       Success(List("vaadin", "vaadin"), " vv")
     )
     assertEquals(
-      'a'.many apply "aaabus",
+      'a'.many | "aaabus",
       Success(List('a', 'a', 'a'), "bus")
     )
   }

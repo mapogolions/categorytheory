@@ -43,11 +43,23 @@ object ParserOps {
   def parseLowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
   def parseUpperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
   def parseDigit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') anyOf
-  def digit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9').anyOf
+  def digit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') anyOf
+  def digits = digit atLeastOne
+  def pint = {
+    def negate[A](sign: Option[A], i: Int): Int = sign match {
+      case None => i
+      case Some(_) => -i
+    }
+    ('-' opt) >> digits.map(_ mkString("") toInt) map negate
+  }
+
   def upperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
   def lowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
   
+  
   implicit class ParserOps[A](pa: Parser[A]) {
+    def opt: Parser[Option[A]] = 
+      pa.map(Some(_)) <|> (Applicative[Parser] pure None)
     def once = pa
     def many: Parser[List[A]] = new Parser[List[A]] {
       def apply(token: String) = {
@@ -55,13 +67,13 @@ object ParserOps {
         Success(ls, rest)
       }
     }
-
     def atLeastOne: Parser[List[A]] = new Parser[List[A]] {
       def apply(token: String) = oneOrMore(pa, token)
     }
   }
 
   implicit class StringOps(str: String) {
+    def opt = parse opt
     def atLeastOne: Parser[List[String]] = parse atLeastOne
     def many: Parser[List[String]] = parse many
     def once: Parser[String] = parse
@@ -70,28 +82,29 @@ object ParserOps {
   }
 
   implicit class ListOfCharsOpts(ls: List[Char]) {
-    def anyOf = ls.map(_ parse).choice
+    def anyOf = ls.map(_ parse) choice
   }
  
   implicit class ListOfParserOps[A, B](ls: List[Parser[A]]) {
-    def choice: Parser[A] = ls.reduce(_ <|> _)
+    def choice: Parser[A] = ls reduce(_ <|> _)
     def sequence: Parser[List[A]] = {
       def cons[A] =  lift({ x: A => xs: List[A] => x :: xs })
       ls match {
-        case Nil => Applicative[Parser].pure(Nil)
-        case (x::xs) => cons(x)(xs.sequence)
+        case Nil => Applicative[Parser] pure Nil
+        case (x::xs) => cons(x)(xs sequence)
       }
     }
   }
 
   implicit class CharOps(ch: Char) {
+    def opt = parse opt
     def atLeastOne: Parser[List[Char]] = parse atLeastOne
     def many: Parser[List[Char]] = parse many
     def once: Parser[Char] = parse
     def parse: Parser[Char] = new Parser[Char] {
       def apply(token: String): Result[Char] =
         if (!token.nonEmpty) Failure("No more")
-        else if (token(0) == ch) Success(ch, token.slice(1, token.length))
+        else if (token(0) == ch) Success(ch, token slice(1, token.length))
         else Failure(s"Expecting ${ch}. Got ${token(0)}")
     }
   }

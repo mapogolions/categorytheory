@@ -13,6 +13,11 @@ case class Success[A](val elem: A, msg: String) extends Result[A]
 case class Failure(val err: String) extends Result[Nothing]
 
 trait Parser[A] { self =>
+  // throwing results away
+  def <|[B](pb: Parser[B]) = self >> pb map { (a, b) => a }
+  def |>[B](pb: Parser[B]) = self >> pb map { (a, b) => b }
+
+  // matching parser zero or one time
   def opt: Parser[Option[A]] = 
       self.map(Some(_)) <|> (Applicative[Parser] pure None)
 

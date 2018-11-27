@@ -18,6 +18,35 @@ import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
   @Test
+  def TestKeepRight: Unit = {
+    assertEquals(
+      digit  <| digit | "123",
+      Success('1', "3")
+    )
+
+    assertEquals(
+      'a'.once |> 'b'.once | "abba",
+      Success('b', "ba")
+    )
+    assertEquals(
+      'a'.once |> 'b'.atLeastOne | "abba",
+      Success(List('b', 'b'), "a")
+    )
+  }
+
+  @Test
+  def TestKeepLeft: Unit = {
+    assertEquals(
+      'a'.once <| 'b'.once apply "abba",
+      Success('a', "ba")
+    )
+    assertEquals(
+      'a'.once <| 'b'.atLeastOne | "abba",
+      Success('a', "a")
+    )
+  }
+
+  @Test
   def TestOpt: Unit = {
     assertEquals(
       'a'.parse.opt | "alloha", 
@@ -36,6 +65,8 @@ class TestParser {
   def TestPint: Unit = {
     assertEquals(pint | "123hello", Success(123, "hello"))
     assertEquals(pint | "1020", Success(1020, ""))
+    assertEquals(pint | "-123...", Success(-123, "..."))
+    assertEquals(pint | "3434...", Success(3434, "..."))
   }
 
   @Test

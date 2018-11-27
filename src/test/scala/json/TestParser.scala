@@ -18,6 +18,42 @@ import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
   @Test
+  def TestMany: Unit = {
+    assertEquals(
+      "www".many("file://"),
+      Success(Nil, "file://")
+    )
+    assertEquals(
+      'b'.many apply "",
+      Success(Nil, "")
+    )
+    assertEquals(
+      "vaadin".many apply "vaadinvaadin vv",
+      Success(List("vaadin", "vaadin"), " vv")
+    )
+    assertEquals(
+      'a'.many apply "aaabus",
+      Success(List('a', 'a', 'a'), "bus")
+    )
+  }
+
+  @Test
+  def TestOnce: Unit = {
+    assertEquals(
+      'a'.once apply "alive",
+      Success('a', "live")
+    )
+    assertEquals(
+      "fun".once("functor"),
+      Success("fun", "ctor")
+    )
+    assertEquals(
+      'b'.once("boom"),
+      Success('b', "oom")
+    )
+  }
+
+  @Test
   def TestParseString: Unit = {
     val parseABC = "ABC".parse
     assertEquals(

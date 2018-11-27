@@ -19,13 +19,6 @@ object ParserOps {
       }
     }
   }
-  def sequence[A](ls: List[Parser[A]]): Parser[List[A]] = {
-    def cons[A] =  lift({ x: A => xs: List[A] => x :: xs })
-    ls match {
-      case Nil => Applicative[Parser].pure(Nil)
-      case (x::xs) => cons(x)(sequence(xs))
-    }
-  }
   def startWith = lift({ token: String => token.startsWith })
   def add = lift({ a: Int => b: Int => a + b })
   def lift[A, B, C](f: A => B => C)(pa: Parser[A])(pb: Parser[B]) =
@@ -43,8 +36,15 @@ object ParserOps {
   def parseDigit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') anyOf
   
   implicit class StringOps(str: String) {
-    def parse: Parser[String] = 
-      sequence(str.toList.map(_ parse)) map { _ mkString("") }
+    def many: Parser[List[String]] = new Parser[List[String]] {
+      def apply(token: String) = {
+        val (ls, rest) = anytimes(str.once, token)
+        Success(ls, rest)
+      }
+    }
+    def once: Parser[String] = parse
+    def parse: Parser[String] =
+      str.toList.map(_ parse).sequence map { _ mkString("") }
   }
 
   implicit class ListOfCharsOpts(ls: List[Char]) {
@@ -53,9 +53,23 @@ object ParserOps {
  
   implicit class ListOfParserOps[A, B](ls: List[Parser[A]]) {
     def choice: Parser[A] = ls.reduce(_ <|> _)
+    def sequence: Parser[List[A]] = {
+      def cons[A] =  lift({ x: A => xs: List[A] => x :: xs })
+      ls match {
+        case Nil => Applicative[Parser].pure(Nil)
+        case (x::xs) => cons(x)(xs.sequence)
+      }
+    }
   }
 
   implicit class CharOps(ch: Char) {
+    def many: Parser[List[Char]] = new Parser[List[Char]] {
+      def apply(token: String) = {
+        val (ls, rest) = anytimes(ch.once, token)
+        Success(ls, rest)
+      }
+    }
+    def once: Parser[Char] = parse
     def parse: Parser[Char] = new Parser[Char] {
       def apply(token: String): Result[Char] =
         if (!token.nonEmpty) Failure("No more")

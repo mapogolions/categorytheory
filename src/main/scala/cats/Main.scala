@@ -13,7 +13,6 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     println("category theory")
-    println(anytimes('a'.parse, "aaaaabag"))
   }
   def msg = "I was compiled by dotty :)"
 }

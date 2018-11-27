@@ -10,7 +10,16 @@ import io.github.mapogolions.json.functor.FunctorSyntax._
 
 
 object ParserOps {
-  def anytimes[A](pa: Parser[A], token: String): (List[A], String) = {
+  private def oneOrMore[A](pa: Parser[A], token: String): Result[List[A]] = {
+    (pa apply token) match {
+      case Failure(e) => Failure(e)
+      case Success(h, t) => {
+        val (xs, rest) = anytimes(pa, t)
+        Success(h :: xs,  rest)
+      }
+    }
+  }
+  private def anytimes[A](pa: Parser[A], token: String): (List[A], String) = {
     (pa apply token) match {
       case Failure(e) => (Nil, token)
       case Success(h, t) => {
@@ -34,14 +43,27 @@ object ParserOps {
   def parseLowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
   def parseUpperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
   def parseDigit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') anyOf
+  def digit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9').anyOf
+  def upperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
+  def lowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
   
-  implicit class StringOps(str: String) {
-    def many: Parser[List[String]] = new Parser[List[String]] {
+  implicit class ParserOps[A](pa: Parser[A]) {
+    def once = pa
+    def many: Parser[List[A]] = new Parser[List[A]] {
       def apply(token: String) = {
-        val (ls, rest) = anytimes(str.once, token)
+        val (ls, rest) = anytimes(pa, token)
         Success(ls, rest)
       }
     }
+
+    def atLeastOnce: Parser[List[A]] = new Parser[List[A]] {
+      def apply(token: String) = oneOrMore(pa, token)
+    }
+  }
+
+  implicit class StringOps(str: String) {
+    def atLeastOne: Parser[List[String]] = str.parse.atLeastOnce
+    def many: Parser[List[String]] = str.parse.many
     def once: Parser[String] = parse
     def parse: Parser[String] =
       str.toList.map(_ parse).sequence map { _ mkString("") }
@@ -63,12 +85,8 @@ object ParserOps {
   }
 
   implicit class CharOps(ch: Char) {
-    def many: Parser[List[Char]] = new Parser[List[Char]] {
-      def apply(token: String) = {
-        val (ls, rest) = anytimes(ch.once, token)
-        Success(ls, rest)
-      }
-    }
+    def atLeastOne: Parser[List[Char]] = ch.parse.atLeastOnce
+    def many: Parser[List[Char]] = ch.parse.many
     def once: Parser[Char] = parse
     def parse: Parser[Char] = new Parser[Char] {
       def apply(token: String): Result[Char] =

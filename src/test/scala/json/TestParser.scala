@@ -18,7 +18,52 @@ import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
   @Test
+  def TestUppserCase: Unit = {
+    assertEquals(
+      upperCase.once | "Albus",
+      Success('A', "lbus")
+    )
+    assertEquals(
+      upperCase.many | "lower",
+      Success(Nil, "lower")
+    )
+    assertEquals(
+      upperCase.atLeastOnce | "OOps",
+      Success(List('O', 'O'), "ps")
+    )
+  }
+
+  @Test
+  def TestDigit: Unit = {
+    assertEquals(
+      digit.atLeastOnce | "134",
+      Success(List('1', '3', '4'), "")
+    )
+    assertEquals(
+      digit.many apply "text",
+      Success(Nil, "text")
+    )
+  }
+
+  @Test
+  def TestAtLeastOne: Unit = {
+    assertEquals(
+      "w".atLeastOne apply "www.google.com",
+      Success(List("w", "w", "w"), ".google.com")
+    )
+    assertEquals(
+      'a'.atLeastOne apply "abus",
+      Success(List('a'), "bus")
+    )
+  }
+
+  @Test
   def TestMany: Unit = {
+    assertEquals(
+      digit.many apply "123hello",
+      Success(List('1', '2', '3'), "hello")
+    )
+    
     assertEquals(
       "www".many("file://"),
       Success(Nil, "file://")
@@ -149,7 +194,7 @@ class TestParser {
   }
 
   @Test
-  def TestorElse: Unit = {
+  def TestOrElse: Unit = {
     assertEquals(
       'a'.parse <|> 'b'.parse apply "aloha",
       Success('a', "loha")

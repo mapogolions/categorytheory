@@ -26,4 +26,5 @@ trait Parser[A] { self =>
   }
 
   def apply(token: String): Result[A]
+  def | = apply
 }

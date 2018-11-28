@@ -118,10 +118,10 @@ class TestParser {
 
   @Test
   def TestUppserCase: Unit = {
-    assertEquals(upperCase.once | "Albus", Success('A', "lbus"))
-    assertEquals(upperCase.many | "lower", Success(Nil, "lower"))
+    assertEquals(upper | "Albus", Success('A', "lbus"))
+    assertEquals(upper.many | "lower", Success(Nil, "lower"))
     assertEquals(
-      upperCase.atLeastOne | "OOps", 
+      upper.atLeastOne | "OOps", 
       Success(List('O', 'O'), "ps")
     )
   }
@@ -234,10 +234,6 @@ class TestParser {
       parseThreeDigits apply "103number",
       Success((('1', '0'), '3'), "number")
     )
-    assertEquals(
-      parseThreeDigits apply "",
-      Failure("No more")
-    )
   }
 
   @Test
@@ -280,10 +276,6 @@ class TestParser {
       dAndBorF apply "dbar",
       Success(('d', 'b'), "ar")
     )
-    assertEquals(
-      dAndBorF apply "",
-      Failure("No more")
-    )
   }
 
   @Test
@@ -300,10 +292,6 @@ class TestParser {
       'a'.parse <|> 'b'.parse apply "abloha",
       Success('a', "bloha")
     )
-    assertEquals(
-      'a'.parse <|> 'b'.parse apply "",
-      Failure("No more")
-    )
   }
 
   @Test
@@ -311,10 +299,6 @@ class TestParser {
     assertEquals(
       ('b' parse) >> ('c' parse) apply "bcla-la-la",
       Success(('b', 'c'), "la-la-la")
-    )
-    assertEquals(
-      ('b' parse) >> ('d' parse) apply "",
-      Failure("No more")
     )
   }
 }

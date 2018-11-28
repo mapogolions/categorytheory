@@ -41,10 +41,10 @@ object FunctorInstances {
   implicit val parserFunctor: Functor[Parser] = new Functor[Parser] {
     def map[A, B](fa: Parser[A])(f: A => B): Parser[B] =
       fa match {
-        case _ => new Parser[B] {
+        case _ => new Parser[B]() {
           def apply(token: String): Result[B] = fa(token) match {
             case Success(h, t) => Success(f(h), t)
-            case Failure(e) => Failure(e)
+            case Failure(label,err) => Failure(label, err)
           }
         }
       }

@@ -25,8 +25,8 @@ object ParserOps {
   def parseLowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
   def parseUpperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
   def parseDigit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') anyOf
-  def digit = List('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') anyOf
-  def digits = digit atLeastOne
+  def digit = satisfy { _ isDigit } ("digit")
+  def digits = digit.atLeastOne ?? "Any of [0-9]"
   def pint = {
     def negate[A](sign: Option[A], i: Int): Int = sign match {
       case None => i
@@ -35,9 +35,12 @@ object ParserOps {
     ('-' opt) >> digits.map(_ mkString("") toInt) map negate
   }
 
-  def upperCase = Range('A', 'Z').toList.map(_ toChar) anyOf
-  def lowerCase = Range('a', 'z').toList.map(_ toChar) anyOf
-  def whitespace = List(' ', '\t', '\n') anyOf
+  def letter = satisfy { _ isLetter } ("letter")
+  def letterOrDigit = satisfy { _ isLetterOrDigit } ("letter or digit")
+  def upper = satisfy { _ isUpper } ("upper case")
+  def lower = satisfy { _ isLower } ("lower case")
+  def whitespace = satisfy { _ isWhitespace } ("whitespace")
+  def space = ' '.parse ?? "space"
   def whitespaces = whitespace atLeastOne
 
   implicit class StringOps(str: String) {
@@ -52,7 +55,7 @@ object ParserOps {
   }
 
   implicit class ListOfCharsOps(ls: List[Char]) {
-    def anyOf = ls.map(_ parse) choice
+    def anyOf = ls.map(_ parse).choice ?? s"Any of ${ls.mkString("|")}"
   }
  
   implicit class ListOfParserOps[A, B](ls: List[Parser[A]]) {
@@ -66,6 +69,13 @@ object ParserOps {
     }
   }
 
+  private def satisfy[A >: Char](p: A => Boolean)(lbl: String) = new Parser[A](lbl) {
+    def apply(token: String): Result[A] = 
+      if (!token.nonEmpty) Failure(label, "No more")
+      else if (p(token head)) Success(token.head, token.tail)
+      else Failure(label, s"Unexpected ${token head}")
+  }
+
   implicit class CharOps(ch: Char) {
     def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
@@ -73,11 +83,6 @@ object ParserOps {
     def atLeastOne: Parser[List[Char]] = parse atLeastOne
     def many: Parser[List[Char]] = parse many
     def once: Parser[Char] = parse
-    def parse: Parser[Char] = new Parser[Char] {
-      def apply(token: String): Result[Char] =
-        if (!token.nonEmpty) Failure("No more")
-        else if (token(0) == ch) Success(ch, token slice(1, token.length))
-        else Failure(s"Expecting ${ch}. Got ${token(0)}")
-    }
+    def parse: Parser[Char] = satisfy { x: Char => x == ch } (s"$ch")
   }
 }

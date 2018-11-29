@@ -69,12 +69,19 @@ object ParserOps {
     }
   }
 
-  private def satisfy[A >: Char](p: A => Boolean)(lbl: String) = new Parser[A](lbl) {
-    def apply(token: String): Result[A] = 
-      if (!token.nonEmpty) Failure(label, "No more")
-      else if (p(token head)) Success(token.head, token.tail)
-      else Failure(label, s"Unexpected ${token head}")
-  }
+  private def satisfy[A >: Char](p: A => Boolean)(label: String) =
+    new Parser[A](label) {
+      def apply(state: State) = {
+        val (state2, charOpt) = state.char
+        charOpt match {
+          case None => 
+            Failure(label, "No more input", Position from state2)
+          case Some(ch) => 
+            if (p(ch)) Success(ch, state2)
+            else Failure(label, s"Unexpected $ch", Position from state)
+        }
+      }
+    }
 
   implicit class CharOps(ch: Char) {
     def sep[B] = parse.sep[B]

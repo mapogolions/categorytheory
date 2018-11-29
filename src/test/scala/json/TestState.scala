@@ -11,6 +11,28 @@ import io.github.mapogolions.json.adt._
 
 class TestState {
   @Test
+  def TestReadAll: Unit = {
+    assertEquals(
+      State from "a\ncd\na" readAll,
+      List('a', '\n', 'c', 'd', '\n', 'a', '\n')
+    )
+
+    assertEquals(
+      State from "ab" readAll,
+      List('a', 'b', '\n')
+    )
+
+    assertEquals(
+      State from "a" readAll,
+      List('a', '\n')
+    )
+    assertEquals(
+      State from "" readAll,
+      Nil
+    )
+  }
+
+  @Test
   def TestStateChar: Unit = {
     val s0 = State.from("one\ntwo")
     val s1 = s0.char
@@ -21,8 +43,8 @@ class TestState {
   def TestStateLine: Unit = {
     assertEquals(
       State(
-        Array("string 1", "string 2", "string 3"), 
-        Position(0, 0).incRow
+        List("string 1", "string 2", "string 3"), 
+        Pointer(0, 0).incRow
       ).line,
       "string 2"
     )
@@ -32,20 +54,20 @@ class TestState {
     )
 
     assertEquals(
-      State(Array.empty, Position(0, 0)).line,
+      State(Nil, Pointer(0, 0)).line,
       "end of file"
     )
   }
 
   @Test
-  def TestPosition: Unit = {
+  def TestPointer: Unit = {
     assertEquals(
-      Position(0, 0).incCol,
-      Position(0, 1)
+      Pointer(0, 0).incCol,
+      Pointer(0, 1)
     )
     assertEquals(
-      Position(0, 0).incRow,
-      Position(1, 0)
+      Pointer(0, 0).incRow,
+      Pointer(1, 0)
     )
   }
 }

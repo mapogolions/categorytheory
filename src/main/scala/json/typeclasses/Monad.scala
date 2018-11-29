@@ -23,8 +23,8 @@ object MonadInstances {
   implicit val parserMonad: Monad[Parser] = new Monad[Parser] {
     def >>=[A, B](fa: Parser[A])(f: A => Parser[B]): Parser[B] =
       new Parser[B]() {
-        def apply(token: String): Result[B] = (fa apply token) match {
-          case Failure(label, err) => Failure(label, err)
+        def apply(state: State): Result[B] = (fa apply state) match {
+          case Failure(label, err, pos) => Failure(label, err, pos)
           case Success(h, t) => f(h) apply t
         }
       }

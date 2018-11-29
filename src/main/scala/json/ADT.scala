@@ -11,54 +11,70 @@ import io.github.mapogolions.json.monad.MonadInstances._
 import io.github.mapogolions.json.monad.MonadSyntax._
 
 
-case class Position(val row: Int, val col: Int) {
-  def incRow = Position(row + 1, 0)
-  def incCol = Position(col, col + 1)
+case class Pointer(val row: Int, val col: Int) {
+  def incRow = Pointer(row + 1, 0)
+  def incCol = Pointer(row, col + 1)
 }
 
-class State(val lines: Array[String], val pos: Position) {
-  def line: String = 
-    if (pos.row < lines.length) lines(pos.row) 
+class State(val lines: List[String], val ptr: Pointer) {
+  override def toString = s"State(${lines}, ${ptr})"
+  def line = 
+    if (ptr.row < lines.length) lines(ptr.row) 
     else "end of file"
   
   def char =
-    if (pos.row >= lines.length) (this, None)
-    else if (pos.col < line.length) 
-      (State(lines, pos.incCol), Some(line(pos.col)))
-    else (State(lines, pos.incRow), Some('\n'))
+    if (ptr.row >= lines.length) (this, None)
+    else if (ptr.col < line.length) 
+      (State(lines, ptr.incCol), Some(line(ptr.col)))
+    else (State(lines, ptr.incRow), Some('\n'))
 
-  def readAll = char match {
-    case (_, None) => ()
-    case (State(lines, pos), Some(ch)) => ???
+  def readAll: List[Char] = char match {
+    case (_, None) => Nil
+    case (state, Some(ch)) => ch :: state.readAll
   }
 }
 
 object State {
-  def apply(lines: Array[String]=Array.empty, pos: Position=Position(0, 0)) = 
-    new State(lines, pos)
-  def unapply(st: State) = Some(st.lines, st.pos)
+  def apply(lines: List[String]=Nil, ptr: Pointer=Pointer(0, 0)) = 
+    new State(lines, ptr)
+  def unapply(st: State) = Some(st.lines, st.ptr)
   def from(source: String): State =
-    if (!source.nonEmpty) State(Array(), Position(0, 0))
-    else State(source.split("\n"), Position(0, 0))
+    if (!source.nonEmpty) State(Nil, Pointer(0, 0))
+    else State(source.split("\n").toList, Pointer(0, 0))
 }
 
+class Position(val line: String, val row: Int, val col: Int) {
+  override def toString = s"Position(${line}, ${row}, ${col})"
+}
 
+object Position {
+  def apply(line: String, row: Int, col: Int) = new Position(line, row, col)
+  def unapply(pos: Position) = Some(pos.line, pos.row, pos.col)
+  def from(state: State) = Position(state.line, state.ptr.row, state.ptr.col)
+}
 
 trait Result[+A] { self =>
-  def echo = self match {
-    case Success(h, t) => println(s"${h}")
-    case Failure(label, err) => println(s"Error parsing ${label}\n${err}")
-  }
+  def echo = println(self toString)
 }
 case class Success[A](
   val elem: A, 
-  msg: String
-) extends Result[A]
+  val state: State
+) extends Result[A] {
+  override def toString = s"${elem}"
+}
 
 case class Failure(
   val label: String, 
-  val err: String
-) extends Result[Nothing]
+  val err: String,
+  val pos: Position
+) extends Result[Nothing] {
+  override def toString = {
+    val where = s"Row: ${pos.row} Column: ${pos.col} "
+    val what = s"Error parsing ${label}\n"
+    val caret = s"${pos.line}\n${" " * (pos.col + 1)}^ ${err}"
+    s"$where $what $caret"
+  }
+}
 
 
 /* trait Result[+A]
@@ -83,19 +99,19 @@ trait Parser[A](val label: String="unknow") { self =>
   def once = self
 
   def many: Parser[List[A]] = new Parser[List[A]]("many") {
-    def apply(token: String): Result[List[A]] = {
+    def apply(token: State): Result[List[A]] = {
       val (ls, rest) = self anytimes token
       Success(ls, rest)
     }
   }
 
   def atLeastOne: Parser[List[A]] = new Parser[List[A]]("atLeastOne") {
-    def apply(token: String) = self oneOrMore token
+    def apply(token: State) = self oneOrMore token
   }
   
-  private def oneOrMore(token: String): Result[List[A]] = {
+  private def oneOrMore(token: State): Result[List[A]] = {
     (self apply token) match {
-      case Failure(label, err) => Failure(label, err)
+      case Failure(label, err, pos) => Failure(label, err, pos)
       case Success(h, t) => {
         val (ls, rest) = self anytimes t
         Success(h::ls,  rest)
@@ -103,9 +119,9 @@ trait Parser[A](val label: String="unknow") { self =>
     }
   }
 
-  private def anytimes(token: String): (List[A], String) = {
+  private def anytimes(token: State): (List[A], State) = {
     (self apply token) match {
-      case Failure(_, _) => (Nil, token)
+      case Failure(_, _, _) => (Nil, token)
       case Success(h, t) => {
          val res = self anytimes t
         (h :: res._1, res._2)
@@ -114,29 +130,29 @@ trait Parser[A](val label: String="unknow") { self =>
   }
 
   def >>[B](pb: Parser[B]): Parser[(A, B)] = new Parser[(A, B)]() {
-    def apply(token: String): Result[(A, B)] = (self apply token) match {
-      case Failure(label1, err1) => Failure(label1, err1)
+    def apply(state: State): Result[(A, B)] = (self apply state) match {
+      case Failure(label1, err1, pos1) => Failure(label1, err1, pos1)
       case Success(h1, t1) => (pb apply t1) match {
-        case Failure(label2, err2) => Failure(label2, err2)
+        case Failure(label2, err2, pos2) => Failure(label2, err2, pos2)
         case Success(h2, t2) => Success((h1, h2), t2)
       }
     }
   } ?? s"${self.label} andThen ${pb.label}"
 
   def ??(label: String): Parser[A] = new Parser[A](label) {
-    def apply(token: String): Result[A] = (self apply token) match {
+    def apply(state: State): Result[A] = (self apply state) match {
       case Success(h, t) => Success(h, t)
-      case Failure(_, err) => Failure(label, err)
+      case Failure(_, err, pos) => Failure(label, err, pos)
     }
   }
 
   def <|>[B](pb: Parser[B]): Parser[A | B] = new Parser[A | B]() {
-    def apply(token: String): Result[A | B] = (self apply token) match {
+    def apply(token: State): Result[A | B] = (self apply token) match {
       case Success(h, t) => Success(h, t)
-      case Failure(_, _) => (pb apply token)
+      case Failure(_, _, _) => (pb apply token)
     }
   } ?? s"${self.label} orElse ${pb.label}"
 
-  def apply(token: String): Result[A]
-  def | = apply
+  def apply(token: State): Result[A]
+  def | (token: String) = apply (State from token)
 }

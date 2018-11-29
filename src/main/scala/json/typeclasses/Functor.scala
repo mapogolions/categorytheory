@@ -42,9 +42,9 @@ object FunctorInstances {
     def map[A, B](fa: Parser[A])(f: A => B): Parser[B] =
       fa match {
         case _ => new Parser[B]() {
-          def apply(token: String): Result[B] = fa(token) match {
+          def apply(state: State): Result[B] = fa(state) match {
             case Success(h, t) => Success(f(h), t)
-            case Failure(label,err) => Failure(label, err)
+            case Failure(label,err, pos) => Failure(label, err, pos)
           }
         }
       }

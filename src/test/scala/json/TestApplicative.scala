@@ -11,7 +11,7 @@ import io.github.mapogolions.json.applicative.Applicative
 import io.github.mapogolions.json.functor.Functor
 
 class TestApplicative {
-  import io.github.mapogolions.json.applicative.ApplicativeSyntax._
+  /* import io.github.mapogolions.json.applicative.ApplicativeSyntax._
   import io.github.mapogolions.json.applicative.ApplicativeInstances._
   import io.github.mapogolions.json.functor.FunctorSyntax._
   import io.github.mapogolions.json.functor.FunctorInstances._
@@ -75,5 +75,5 @@ class TestApplicative {
       Applicative[Parser] pure true apply "...",
       Success(true, "...")
     )
-  }
+  } */
 }

@@ -10,7 +10,46 @@ import io.github.mapogolions.json.monad.Monad
 import io.github.mapogolions.json.monad.MonadInstances._
 import io.github.mapogolions.json.monad.MonadSyntax._
 
-trait Result[+A]
+
+case class Position(val row: Int, val col: Int) {
+  def incRow = Position(row + 1, 0)
+  def incCol = Position(col, col + 1)
+}
+
+class State(val lines: Array[String], val pos: Position) {
+  def line: String = 
+    if (pos.row < lines.length) lines(pos.row) 
+    else "end of file"
+  
+  def char =
+    if (pos.row >= lines.length) (this, None)
+    else if (pos.col < line.length) 
+      (State(lines, pos.incCol), Some(line(pos.col)))
+    else (State(lines, pos.incRow), Some('\n'))
+
+  def readAll = char match {
+    case (_, None) => ()
+    case (State(lines, pos), Some(ch)) => ???
+  }
+}
+
+object State {
+  def apply(lines: Array[String]=Array.empty, pos: Position=Position(0, 0)) = 
+    new State(lines, pos)
+  def unapply(st: State) = Some(st.lines, st.pos)
+  def from(source: String): State =
+    if (!source.nonEmpty) State(Array(), Position(0, 0))
+    else State(source.split("\n"), Position(0, 0))
+}
+
+
+
+trait Result[+A] { self =>
+  def echo = self match {
+    case Success(h, t) => println(s"${h}")
+    case Failure(label, err) => println(s"Error parsing ${label}\n${err}")
+  }
+}
 case class Success[A](
   val elem: A, 
   msg: String
@@ -73,7 +112,6 @@ trait Parser[A](val label: String="unknow") { self =>
       }
     }
   }
-
 
   def >>[B](pb: Parser[B]): Parser[(A, B)] = new Parser[(A, B)]() {
     def apply(token: String): Result[(A, B)] = (self apply token) match {

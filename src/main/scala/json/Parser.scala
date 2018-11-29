@@ -1,5 +1,6 @@
 package io.github.mapogolions.json.adt
 
+import io.github.mapogolions.json.adt.{ Result, Success, Failure }
 import io.github.mapogolions.json.functor.Functor
 import io.github.mapogolions.json.functor.FunctorInstances._
 import io.github.mapogolions.json.functor.FunctorSyntax._
@@ -10,76 +11,6 @@ import io.github.mapogolions.json.monad.Monad
 import io.github.mapogolions.json.monad.MonadInstances._
 import io.github.mapogolions.json.monad.MonadSyntax._
 
-
-case class Pointer(val row: Int, val col: Int) {
-  def incRow = Pointer(row + 1, 0)
-  def incCol = Pointer(row, col + 1)
-}
-
-class State(val lines: List[String], val ptr: Pointer) {
-  override def toString = s"State(${lines}, ${ptr})"
-  def line = 
-    if (ptr.row < lines.length) lines(ptr.row) 
-    else "end of file"
-  
-  def char =
-    if (ptr.row >= lines.length) (this, None)
-    else if (ptr.col < line.length) 
-      (State(lines, ptr.incCol), Some(line(ptr.col)))
-    else (State(lines, ptr.incRow), Some('\n'))
-
-  def readAll: List[Char] = char match {
-    case (_, None) => Nil
-    case (state, Some(ch)) => ch :: state.readAll
-  }
-}
-
-object State {
-  def apply(lines: List[String]=Nil, ptr: Pointer=Pointer(0, 0)) = 
-    new State(lines, ptr)
-  def unapply(st: State) = Some(st.lines, st.ptr)
-  def from(source: String): State =
-    if (!source.nonEmpty) State(Nil, Pointer(0, 0))
-    else State(source.split("\n").toList, Pointer(0, 0))
-}
-
-class Position(val line: String, val row: Int, val col: Int) {
-  override def toString = s"Position(${line}, ${row}, ${col})"
-}
-
-object Position {
-  def apply(line: String, row: Int, col: Int) = new Position(line, row, col)
-  def unapply(pos: Position) = Some(pos.line, pos.row, pos.col)
-  def from(state: State) = Position(state.line, state.ptr.row, state.ptr.col)
-}
-
-trait Result[+A] { self =>
-  def echo = println(self toString)
-}
-case class Success[A](
-  val elem: A, 
-  val state: State
-) extends Result[A] {
-  override def toString = s"${elem}"
-}
-
-case class Failure(
-  val label: String, 
-  val err: String,
-  val pos: Position
-) extends Result[Nothing] {
-  override def toString = {
-    val where = s"Row: ${pos.row} Column: ${pos.col} "
-    val what = s"Error parsing ${label}\n"
-    val caret = s"${pos.line}\n${" " * (pos.col + 1)}^ ${err}"
-    s"$where $what $caret"
-  }
-}
-
-
-/* trait Result[+A]
-case class Success[A](val elem: A, msg: String) extends Result[A]
-case class Failure(val err: String) extends Result[Nothing] */
 
 trait Parser[A](val label: String="unknow") { self =>
   // Parses one or more occurrences of p separated by sep

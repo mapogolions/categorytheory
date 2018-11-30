@@ -29,39 +29,56 @@ trait Parser[A](val label: String="unknow") { self =>
 
   def once = self
 
+  
   def many: Parser[List[A]] = new Parser[List[A]]("many") {
-    def apply(token: State): Result[List[A]] = {
-      val (ls, rest) = self anytimes token
+    def apply(source: Source): Result[List[A]] = {
+      val (ls, rest) = self anytimes source
       Success(ls, rest)
     }
   }
 
   def atLeastOne: Parser[List[A]] = new Parser[List[A]]("atLeastOne") {
-    def apply(token: State) = self oneOrMore token
+    def apply(source: Source) = self oneOrMore source
   }
-  
-  private def oneOrMore(token: State): Result[List[A]] = {
-    (self apply token) match {
+
+  def times(n: Int): Parser[List[A]] = new Parser[List[A]]("repeat times") {
+    def apply(source: Source) = 
+      if (n <= 0) Failure(label, s"Unexpected $n", Position from source)
+      else self.ntimes(source, n)
+  }
+
+  private def ntimes(source: Source, n: Int): Result[List[A]] = {
+    @annotation.tailrec
+    def loop(src: Source, acc: List[A], count: Int): Result[List[A]] = {
+      (count, self apply src) match {
+        case (0, _) => Success(acc.reverse, src)
+        case (_, Failure(label, err, pos)) => Failure(label, err, pos)
+        case (_, Success(h, t)) => loop(t, h :: acc, count - 1)
+      }
+    }
+    loop(source, Nil, n)
+  }
+
+  private def oneOrMore(source: Source): Result[List[A]] =
+    (self apply source) match {
       case Failure(label, err, pos) => Failure(label, err, pos)
       case Success(h, t) => {
-        val (ls, rest) = self anytimes t
-        Success(h::ls,  rest)
+        val (ch, src) = self anytimes t
+        Success(h :: ch,  src)
       }
     }
-  }
 
-  private def anytimes(token: State): (List[A], State) = {
-    (self apply token) match {
-      case Failure(_, _, _) => (Nil, token)
+  private def anytimes(source: Source): (List[A], Source) =
+    (self apply source) match {
+      case Failure(_, _, _) => (Nil, source)
       case Success(h, t) => {
-         val res = self anytimes t
-        (h :: res._1, res._2)
+         val (ch, src) = self anytimes t
+        (h :: ch, src)
       }
     }
-  }
 
   def >>[B](pb: Parser[B]): Parser[(A, B)] = new Parser[(A, B)]() {
-    def apply(state: State): Result[(A, B)] = (self apply state) match {
+    def apply(source: Source): Result[(A, B)] = (self apply source) match {
       case Failure(label1, err1, pos1) => Failure(label1, err1, pos1)
       case Success(h1, t1) => (pb apply t1) match {
         case Failure(label2, err2, pos2) => Failure(label2, err2, pos2)
@@ -71,19 +88,19 @@ trait Parser[A](val label: String="unknow") { self =>
   } ?? s"${self.label} andThen ${pb.label}"
 
   def ??(label: String): Parser[A] = new Parser[A](label) {
-    def apply(state: State): Result[A] = (self apply state) match {
+    def apply(source: Source): Result[A] = (self apply source) match {
       case Success(h, t) => Success(h, t)
       case Failure(_, err, pos) => Failure(label, err, pos)
     }
   }
 
   def <|>[B](pb: Parser[B]): Parser[A | B] = new Parser[A | B]() {
-    def apply(token: State): Result[A | B] = (self apply token) match {
+    def apply(source: Source): Result[A | B] = (self apply source) match {
       case Success(h, t) => Success(h, t)
-      case Failure(_, _, _) => (pb apply token)
+      case Failure(_, _, _) => (pb apply source)
     }
   } ?? s"${self.label} orElse ${pb.label}"
 
-  def apply(token: State): Result[A]
-  def | (token: String) = apply (State from token)
+  def apply(source: Source): Result[A]
+  def | (text: String) = apply (Source from text)
 }

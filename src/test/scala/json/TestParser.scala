@@ -17,250 +17,203 @@ import io.github.mapogolions.json.applicative.ApplicativeInstances._
 import io.github.mapogolions.json.applicative.ApplicativeSyntax._
 
 class TestParser {
- /*  @Test
+ @Test
   def TestSep: Unit = {
-    assertEquals(
-      '?'.sep(whitespace) | "? ? ?...",
-      Success(List('?', '?', '?'), "...")
+    ('?'.sep(whitespace) | "? ? ?...").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, List('?', '?', '?')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestWhitespaces: Unit = {
-    assertEquals(
-      whitespaces | "\t text",
-      Success(List('\t', ' '), "text")
+    (whitespaces | "\t text").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, List('\t', ' ')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      whitespaces | "\n\t text", 
-      Success(List('\n', '\t', ' '), "text")
+
+    (whitespaces | "\n\t text").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, List('\n', '\t', ' ')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestWhitespace: Unit = {
-    assertEquals(whitespace | " text",Success(' ', "text"))
-    assertEquals(whitespace | "\t text",Success('\t', " text"))
-    assertEquals(whitespace | "\n\t text", Success('\n', "\t text"))
-    assertEquals(
-      (whitespace >> digit).many | " 1 2 3 ",
-      Success(List((' ', '1'), (' ', '2'), (' ', '3')), " ")
+    (whitespace | " text").test(
+      (elem: Char, src: Source) => assertEquals(elem, ' '),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      (whitespace |> digit).many | " 1 2 3 ",
-      Success(List('1', '2', '3'), " ")
+
+    (whitespace | "\t text").test(
+      (elem: Char, src: Source) => assertEquals(elem, '\t'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      ('-'.once <| digit).many | "-1-2-3-",
-      Success(List('-', '-', '-'), "-")
+
+    (whitespace | "\n\t text").test(
+      (elem: Char, src: Source) => assertEquals(elem, '\n'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
+    )
+
+    ((whitespace |> digit).many | " 1 2 3 ").test(
+      (elem: List[Char], src: Source) => 
+        assertEquals(elem, List('1', '2', '3')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
+    )
+
+    (('-'.once <| digit).many | "-1-2-3-").test(
+      (elem: List[Char], src: Source) => 
+        assertEquals(elem, List('-', '-', '-')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestBetween: Unit = {
-    assertEquals(
-      'a'.between('b'.once)('c'.once) | "bac-...",
-      Success('a', "-...")
+    ('a'.between('b'.once)('c'.once) | "bac-...").test(
+      (elem: Char, src: Source) => assertEquals(elem, 'a'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestKeepRight: Unit = {
-    assertEquals(
-      digit  <| digit | "123",
-      Success('1', "3")
+    (digit  |> digit | "123").test(
+      (elem: Char, src: Source) => assertEquals(elem, '2'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
 
-    assertEquals(
-      'a'.once |> 'b'.once | "abba",
-      Success('b', "ba")
-    )
-    assertEquals(
-      'a'.once |> 'b'.atLeastOne | "abba",
-      Success(List('b', 'b'), "a")
+    ('a'.once  |> 'b'.once | "abba").test(
+      (elem: Char, src: Source) => assertEquals(elem, 'b'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestKeepLeft: Unit = {
-    assertEquals(
-      'a'.once <| 'b'.once apply "abba",
-      Success('a', "ba")
+    ('a'.once <| 'b'.once | "abba").test(
+      (elem: Char, src: Source) => assertEquals(elem, 'a'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      'a'.once <| 'b'.atLeastOne | "abba",
-      Success('a', "a")
+
+    (digit  <| digit | "123").test(
+      (elem: Char, src: Source) => assertEquals(elem, '1'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
+    )
+
+    ('a'.once <| 'b'.atLeastOne | "abba").test(
+      (elem: Char, src: Source) => assertEquals(elem, 'a'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestOpt: Unit = {
-    assertEquals(
-      'a'.parse.opt | "alloha", 
-      Success(Some('a'), "lloha")
+    ('a'.parse.opt | "alloha").test(
+      (elem: Option[Char], src: Source) => assertEquals(elem, Some('a')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      "ll".opt | "lloha",
-      Success(Some("ll"), "oha")
+
+    ("ll".parse.opt | "lloha").test(
+      (elem: Option[String], src: Source) => assertEquals(elem, Some("ll")),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      pint.opt | "233h3",
-      Success(Some(233), "h3")
+
+    (pint.opt | "233h3").test(
+      (elem: Option[Int], src: Source) => assertEquals(elem, Some(233)),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
+  
   @Test
   def TestPint: Unit = {
-    assertEquals(pint | "123hello", Success(123, "hello"))
-    assertEquals(pint | "1020", Success(1020, ""))
-    assertEquals(pint | "-123...", Success(-123, "..."))
-    assertEquals(pint | "3434...", Success(3434, "..."))
-  }
+    (pint | "123hello").test(
+      (elem: Int, src: Source) => assertEquals(elem, 123),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
+    )
 
-  @Test
-  def TestUppserCase: Unit = {
-    assertEquals(upper | "Albus", Success('A', "lbus"))
-    assertEquals(upper.many | "lower", Success(Nil, "lower"))
-    assertEquals(
-      upper.atLeastOne | "OOps", 
-      Success(List('O', 'O'), "ps")
+    (pint | "-1020").test(
+      (elem: Int, src: Source) => assertEquals(elem, -1020),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestDigit: Unit = {
-    assertEquals(
-      digit.atLeastOne | "134",
-      Success(List('1', '3', '4'), "")
+    (digit.atLeastOne | "134").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, List('1', '3', '4')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      digit.many apply "text",
-      Success(Nil, "text")
+
+    (digit.many | "text").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, Nil),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestAtLeastOne: Unit = {
-    assertEquals(
-      "w".atLeastOne apply "www.google.com",
-      Success(List("w", "w", "w"), ".google.com")
+    ("w".atLeastOne | "www.google.com").test(
+      (elem: List[String], src: Source) => assertEquals(elem, List("w", "w", "w")),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      'a'.atLeastOne | "abus",
-      Success(List('a'), "bus")
+
+    ('a'.atLeastOne | "abus").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, 'a' :: Nil),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestMany: Unit = {
-    assertEquals(
-      digit.many apply "123hello",
-      Success(List('1', '2', '3'), "hello")
+    (digit.many | "123hello").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, List('1', '2', '3')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    
-    assertEquals(
-      "www".many("file://"),
-      Success(Nil, "file://")
+
+    ("www".many | "file://").test(
+      (elem: List[String], src: Source) => assertEquals(elem, Nil),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      'b'.many apply "",
-      Success(Nil, "")
-    )
-    assertEquals(
-      "vaadin".many apply "vaadinvaadin vv",
-      Success(List("vaadin", "vaadin"), " vv")
-    )
-    assertEquals(
-      'a'.many | "aaabus",
-      Success(List('a', 'a', 'a'), "bus")
+
+    ('b'.many | "").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, Nil),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestOnce: Unit = {
-    assertEquals(
-      'a'.once apply "alive",
-      Success('a', "live")
+    ('a'.once | "alive").test(
+      (elem: Char, src: Source) => assertEquals(elem, 'a'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-    assertEquals(
-      "fun".once("functor"),
-      Success("fun", "ctor")
-    )
-    assertEquals(
-      'b'.once("boom"),
-      Success('b', "oom")
+
+    ("fun".once | "functor").test(
+      (elem: String, src: Source) => assertEquals(elem, "fun"),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
   def TestParseString: Unit = {
     val parseABC = "ABC".parse
-    assertEquals(
-      parseABC apply "ABCDE",
-      Success("ABC", "DE")
+    (parseABC | "ABCDE").test(
+      (elem: String, src: Source) => assertEquals(elem, "ABC"),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
   @Test
-  def TestParseLift: Unit = {
-    val pa = Applicative[Parser] pure 10
-    val pb = Applicative[Parser] pure 'a'
-    val f: Int => Char => String = a: Int => b: Char => a.toString + b + ""
-    val fake = ""
-    assertEquals(
-      lift(f)(pa)(pb) apply fake,
-      Success("10a", "")
+  def TestUppserCase: Unit = {
+    (upper | "Albus").test(
+      (elem: Char, src: Source) => assertEquals(elem, 'A'),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
-  }
 
-  @Test
-  def TestParseThreeDigitsAsInt: Unit = {
-    assertEquals(
-      parserThreeDigitsAsInt apply "1036number",
-      Success(103, "6number")
-    )
-  }
-
-  @Test
-  def TestParseThreeDigitsAsStr: Unit = {
-    assertEquals(
-      parseThreeDigitsAsStr apply "103number",
-      Success("103", "number")
-    )
-  }
-
-  @Test
-  def TestParseThreeDigits: Unit = {
-    assertEquals(
-      parseThreeDigits apply "103number",
-      Success((('1', '0'), '3'), "number")
-    )
-  }
-
-  @Test
-  def TestParseUpperCase: Unit = {
-    assertEquals(
-      parseUpperCase apply "HEllo",
-      Success('H', "Ello")
-    )
-  }
-
-  @Test
-  def TestParseLowerCase: Unit = {
-    assertEquals(
-      parseLowerCase apply "hellO",
-      Success('h', "ellO")
-    )
-  }
-
-  @Test
-  def TestParseDigit: Unit = {
-    assertEquals(
-      parseDigit apply "10bar",
-      Success('1', "0bar")
-    )
-    assertEquals(
-      parseDigit apply "0hello",
-      Success('0', "hello")
+    (upper.atLeastOne | "OOps").test(
+      (elem: List[Char], src: Source) => assertEquals(elem, List('O', 'O')),
+      (label: String, err: String, pos: Position) => assertFail("Should be success")
     )
   }
 
@@ -269,15 +222,21 @@ class TestParser {
     // Left associative
     val dAndBorF = 'd'.parse >> ('b'.parse <|> 'f'.parse)
     assertEquals(
-      dAndBorF apply "dfoo",
-      Success(('d', 'f'), "oo"),
+      dAndBorF | "dfoo" toString,
+      "(d,f)"
     )
     assertEquals(
-      dAndBorF apply "dbar",
-      Success(('d', 'b'), "ar")
+      dAndBorF | "dbar" toString,
+      "(d,b)"
     )
+
+    (dAndBorF | "dfoo")
+      .test(
+        (elem: (Char, Char), src: Source) => assertEquals(elem, ('d', 'f')),
+        (label: String, err: String, pos: Position) => assertFail("Should be success")
+      )
   }
-  */
+
   @Test
   def TestOrElse: Unit = {
     assertEquals(

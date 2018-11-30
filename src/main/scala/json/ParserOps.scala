@@ -42,11 +42,13 @@ object ParserOps {
   def whitespace = satisfy { _ isWhitespace } ("whitespace")
   def space = ' '.parse ?? "space"
   def whitespaces = whitespace atLeastOne
+  def whatever = satisfy { _ => true } ("whatever")
 
   implicit class StringOps(str: String) {
     def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
+    def times(n: Int) = parse times n
     def atLeastOne: Parser[List[String]] = parse atLeastOne
     def many: Parser[List[String]] = parse many
     def once: Parser[String] = parse
@@ -71,15 +73,12 @@ object ParserOps {
 
   private def satisfy[A >: Char](p: A => Boolean)(label: String) =
     new Parser[A](label) {
-      def apply(state: State) = {
-        val (state2, charOpt) = state.char
-        charOpt match {
-          case None => 
-            Failure(label, "No more input", Position from state2)
-          case Some(ch) => 
-            if (p(ch)) Success(ch, state2)
-            else Failure(label, s"Unexpected $ch", Position from state)
-        }
+      def apply(source: Source) = source.char match {
+        case (src, None) => 
+          Failure(label, "No more input", Position from src)
+        case (src, Some(ch)) =>
+          if (p(ch)) Success(ch, src)
+          else Failure(label, s"Unexpected $ch", Position from source)
       }
     }
 
@@ -87,6 +86,7 @@ object ParserOps {
     def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
+    def times(n: Int) = parse times n
     def atLeastOne: Parser[List[Char]] = parse atLeastOne
     def many: Parser[List[Char]] = parse many
     def once: Parser[Char] = parse

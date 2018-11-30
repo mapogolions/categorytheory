@@ -13,48 +13,48 @@ class TestState {
   @Test
   def TestReadAll: Unit = {
     assertEquals(
-      State from "a\ncd\na" readAll,
+      Source from "a\ncd\na" readAll,
       List('a', '\n', 'c', 'd', '\n', 'a', '\n')
     )
 
     assertEquals(
-      State from "ab" readAll,
+      Source from "ab" readAll,
       List('a', 'b', '\n')
     )
 
     assertEquals(
-      State from "a" readAll,
+      Source from "a" readAll,
       List('a', '\n')
     )
     assertEquals(
-      State from "" readAll,
+      Source from "" readAll,
       Nil
     )
   }
 
   @Test
   def TestStateChar: Unit = {
-    val s0 = State.from("one\ntwo")
+    val s0 = Source.from("one\ntwo")
     val s1 = s0.char
     assertEquals(s1._2, Some('o'))
   }
 
-  @Test
+  
   def TestStateLine: Unit = {
     assertEquals(
-      State(
-        List("string 1", "string 2", "string 3"), 
+      Source(
+        Array("string 1", "string 2", "string 3"), 
         Pointer(0, 0).incRow
       ).line,
       "string 2"
     )
     assertEquals(
-      State.from("string 1\nstring 2\nstring 3").line,
+      Source.from("string 1\nstring 2\nstring 3").line,
       "string 1"
     )
 
     assertEquals(
-      State(Nil, Pointer(0, 0)).line,
+      Source().line,
       "end of file"
     )
   }

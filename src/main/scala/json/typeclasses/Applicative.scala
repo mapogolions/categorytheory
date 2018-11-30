@@ -29,7 +29,7 @@ object ApplicativeSyntax {
 object ApplicativeInstances {
   implicit val parserApplicative: Applicative[Parser] = new Applicative[Parser] {
     def pure[A](x: A): Parser[A] = new Parser[A]() {
-      def apply(state: State): Result[A] = Success(x, state)
+      def apply(source: Source): Result[A] = Success(x, source)
     }
     /**
      * f :: a -> b

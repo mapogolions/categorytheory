@@ -1,17 +1,25 @@
 package io.github.mapogolions.json.adt
 
-import io.github.mapogolions.json.adt.{ Position, State }
+import io.github.mapogolions.json.adt.{ Position, Source }
 
 
 sealed trait Result[+A] { self =>
   def echo = println(self toString)
+  def test(
+    f: (elem: A, src: Source) => Unit, 
+    g: (label: String, err: String, pos: Position) => Unit
+  ) = self match {
+    case Success(elem, src) => f(elem, src)
+    case Failure(label, err, pos) => g(label, err, pos)
+  }
 }
 
 case class Success[A](
   val elem: A, 
-  val state: State
+  val source: Source
 ) extends Result[A] {
-  override def toString = s"${elem}"
+  // override def toString = s"Success(${elem},${source})"
+  override def toString = s"$elem"
 }
 
 case class Failure(

@@ -43,12 +43,23 @@ object ParserOps {
   def space = ' '.parse ?? "space"
   def whitespaces = whitespace atLeastOne
   def whatever = satisfy { _ => true } ("whatever")
+  
+  def email = {
+    val nickname = letterOrDigit.atLeastOne.map(xs => xs.mkString(""))
+    val domain = ('@'.once >> 
+                  ("mail.ru".once <|> "gmail.com".once <|> "yandex.ru".once)
+                 ).map(_ + _)
+    (nickname >> domain).map(_ + _)
+  }
+
+  def tel1 = (digits >> '-'.once >> digits)
+    .map( (xs, ys) => xs._1 ++ List(xs._2) ++ ys)
+    .map(_ mkString(""))
 
   implicit class StringOps(str: String) {
     def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
-    def count = parse count
     def lessOrEq(n: Int) = parse lessOrEq n
     def less(n: Int) = parse less n
     def more(n: Int) = parse more n
@@ -61,6 +72,11 @@ object ParserOps {
       str.toList.map(_ parse).sequence map { _ mkString("") }
   }
 
+  implicit class ParserListOps[A](pa: Parser[List[A]]) {
+    def count = pa.map(xs => xs.length)
+    def string(delim: String="") = pa.map(xs => xs.mkString(delim))
+    def int = pa.map(_ mkString("") toInt)
+  }
   implicit class ListOfCharsOps(ls: List[Char]) {
     def anyOf = ls.map(_ parse).choice ?? s"Any of ${ls.mkString("|")}"
   }
@@ -91,7 +107,6 @@ object ParserOps {
     def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
-    def count = parse count
     def lessOrEq(n: Int) = parse lessOrEq n
     def less(n: Int) = parse less n
     def more(n: Int) = parse more n

@@ -15,9 +15,11 @@ object Main {
     println("category theory")
     /* ('a'.moreOrEq(2) | "aabba" echo)
     ('a'.more(1) | "aabba" echo ) */
-    ('a'.less(3) | "aaa" echo)
-    ('a'.lessOrEq(3) | "aaa" echo)
-    ('a'.count | "bla-bal" echo)
+    /* ('a'.less(3) | "bla" echo)
+    ('a'.lessOrEq(3) | "b" echo)*/
+    // (tel1 | "3343-3434" echo)
+    /* ('a'.less(3).count >> 'b'.once | "abb" echo)
+    (email | "lalala@yandex.ru" echo) */
   }
   def msg = "I was compiled by dotty :)"
 }

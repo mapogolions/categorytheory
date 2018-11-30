@@ -36,11 +36,11 @@ trait Parser[A](val label: String="unknow") { self =>
     moreOrEq(n + 1) ?? s"more than $n"
 
   def less(n: Int): Parser[List[A]] =
-    Range(0, n).toList.reverse.map(x => self.repeat(x)).reduce(_ <|> _)
+    Range(0, n).toList.reverse
+      .map(x => self.repeat(x)).reduce(_ <|> _) ?? s"less than $n"
 
-  def lessOrEq(n: Int): Parser[List[A]] = less(n + 1)
-
-  def count: Parser[Int] = self.many.map(ls => ls.length)
+  def lessOrEq(n: Int): Parser[List[A]] = 
+    less(n + 1) ?? s"less or equals $n"
 
   def many: Parser[List[A]] = new Parser[List[A]]("many") {
     def apply(source: Source): Result[List[A]] = {

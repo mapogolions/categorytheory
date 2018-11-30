@@ -25,23 +25,35 @@ trait Parser[A](val label: String="unknow") { self =>
 
   // matching parser zero or one time
   def opt: Parser[Option[A]] = 
-      self.map(Some(_)) <|> (Applicative[Parser] pure None)
+    self.map(Some(_)) <|> (Applicative[Parser] pure None)
 
   def once = self
 
-  
+  def moreOrEq(n: Int): Parser[List[A]] = 
+    (self.repeat(n) >> self.many ?? s"more or equals $n").map((xs, ys) => xs ++ ys)
+
+  def more(n: Int): Parser[List[A]] =
+    moreOrEq(n + 1) ?? s"more than $n"
+
+  def less(n: Int): Parser[List[A]] =
+    Range(0, n).toList.reverse.map(x => self.repeat(x)).reduce(_ <|> _)
+
+  def lessOrEq(n: Int): Parser[List[A]] = less(n + 1)
+
+  def count: Parser[Int] = self.many.map(ls => ls.length)
+
   def many: Parser[List[A]] = new Parser[List[A]]("many") {
     def apply(source: Source): Result[List[A]] = {
-      val (ls, rest) = self anytimes source
-      Success(ls, rest)
+      val (lsOfChar, src) = self anytimes source
+      Success(lsOfChar, src)
     }
-  }
+  } 
 
   def atLeastOne: Parser[List[A]] = new Parser[List[A]]("atLeastOne") {
     def apply(source: Source) = self oneOrMore source
   }
 
-  def times(n: Int): Parser[List[A]] = new Parser[List[A]]("repeat times") {
+  def repeat(n: Int): Parser[List[A]] = new Parser[List[A]]("repeat times") {
     def apply(source: Source) = 
       if (n <= 0) Failure(label, s"Unexpected $n", Position from source)
       else self.ntimes(source, n)
@@ -68,7 +80,7 @@ trait Parser[A](val label: String="unknow") { self =>
       }
     }
 
-  private def anytimes(source: Source): (List[A], Source) =
+   private def anytimes(source: Source): (List[A], Source) =
     (self apply source) match {
       case Failure(_, _, _) => (Nil, source)
       case Success(h, t) => {

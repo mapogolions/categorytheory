@@ -48,7 +48,12 @@ object ParserOps {
     def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
-    def times(n: Int) = parse times n
+    def count = parse count
+    def lessOrEq(n: Int) = parse lessOrEq n
+    def less(n: Int) = parse less n
+    def more(n: Int) = parse more n
+    def moreOrEq(n: Int) = parse moreOrEq n
+    def repeat(n: Int) = parse repeat n
     def atLeastOne: Parser[List[String]] = parse atLeastOne
     def many: Parser[List[String]] = parse many
     def once: Parser[String] = parse
@@ -86,7 +91,12 @@ object ParserOps {
     def sep[B] = parse.sep[B]
     def between[B, C] = parse.between[B, C]
     def opt = parse opt
-    def times(n: Int) = parse times n
+    def count = parse count
+    def lessOrEq(n: Int) = parse lessOrEq n
+    def less(n: Int) = parse less n
+    def more(n: Int) = parse more n
+    def moreOrEq(n: Int) = parse moreOrEq n
+    def repeat(n: Int) = parse repeat n
     def atLeastOne: Parser[List[Char]] = parse atLeastOne
     def many: Parser[List[Char]] = parse many
     def once: Parser[Char] = parse

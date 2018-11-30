@@ -13,6 +13,11 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     println("category theory")
+    /* ('a'.moreOrEq(2) | "aabba" echo)
+    ('a'.more(1) | "aabba" echo ) */
+    ('a'.less(3) | "aaa" echo)
+    ('a'.lessOrEq(3) | "aaa" echo)
+    ('a'.count | "bla-bal" echo)
   }
   def msg = "I was compiled by dotty :)"
 }

@@ -115,4 +115,5 @@ trait Parser[A](val label: String="unknow") { self =>
 
   def apply(source: Source): Result[A]
   def | (text: String) = apply (Source from text)
+  def |>>  = self.map
 }
